@@ -230,6 +230,25 @@ export const deleteProductImage = async (req, res) => {
   }
 };
 
+// RESTORE (hiện lại sản phẩm)
+export const restoreProduct = async (req, res) => {
+  try {
+    const product = await Product.findByIdAndUpdate(
+      req.params.id, 
+      { status: "active" }, 
+      { new: true }
+    );
+    
+    if (!product) {
+      return res.status(404).json({ message: "Sản phẩm không tồn tại" });
+    }
+
+    res.json({ message: "Đã hiện sản phẩm" });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi hệ thống" });
+  }
+};
+
 // SET MAIN IMAGE
 export const setMainImage = async (req, res) => {
   try {

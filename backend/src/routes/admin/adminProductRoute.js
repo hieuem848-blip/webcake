@@ -1,7 +1,7 @@
 import express from "express";
 import {
   getProducts, getProductDetail, createProduct, updateProduct,
-  deleteProduct, softDeleteProduct,
+  deleteProduct, softDeleteProduct, restoreProduct,
   addVariant, deleteVariant,
   addProductImage, deleteProductImage, setMainImage
 } from "../../controllers/admin/adminProductController.js";
@@ -24,6 +24,7 @@ router.patch("/image/:id/main", setMainImage);
 router.get("/:id", getProductDetail);
 router.put("/:id", updateProduct);
 router.patch("/:id/hide", softDeleteProduct);   // ẩn sản phẩm
+router.patch("/:id/show", restoreProduct);      // hiện lại sản phẩm
 router.delete("/:id", deleteProduct);           // xóa hẳn
 
 export default router;

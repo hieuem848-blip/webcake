@@ -286,6 +286,7 @@ export const adminProductApi = {
   update: (id: string, data: Partial<AdminProduct>) =>
     adminFetch<{ product: AdminProduct }>(`/admin/products/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   hide: (id: string) => adminFetch(`/admin/products/${id}/hide`, { method: "PATCH" }),
+  show: (id: string) => adminFetch(`/admin/products/${id}/show`, { method: "PATCH" }),
   delete: (id: string) => adminFetch(`/admin/products/${id}`, { method: "DELETE" }),
   addVariant: (data: { productId: string; size: string; serving: string; price: number }) =>
     adminFetch("/admin/products/variant/add", { method: "POST", body: JSON.stringify(data) }),
