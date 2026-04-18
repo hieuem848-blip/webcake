@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fffdf8;
+  --foreground: #1a1a1a;
+  --gold: #C8A96A;
+  --gold-light: #e8d5a3;
+  --gold-dark: #a0823e;
+  --cream: #fdf6ec;
+  --font-heading: var(--font-playfair), Georgia, serif;
+  --font-body: var(--font-lato), sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-heading);
+}
+
+.marquee {
+  white-space: nowrap;
+  animation: marquee 25s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.product-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(200, 169, 106, 0.18);
+}
+
+@keyframes pageFade {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.page-fade {
+  animation: pageFade 0.4s ease forwards;
+}
+
+.btn-gold {
+  background: var(--gold);
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-gold:hover {
+  background: var(--gold-dark);
+  transform: translateY(-1px);
+}
+
+.cat-pill {
+  transition: all 0.2s ease;
+  border: 1.5px solid #e5e7eb;
+}
+.cat-pill.active {
+  background: #C8A96A;
+  color: white;
+  border-color: #C8A96A;
+}
+.cat-pill:not(.active):hover {
+  border-color: #C8A96A;
+  color: #C8A96A;
+}
