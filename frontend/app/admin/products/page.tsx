@@ -208,57 +208,57 @@ export default function ProductsPage() {
                         <td className="px-5 py-3">
                           <div className="flex items-center justify-end gap-1.5">
 
-  {/* ADMIN ONLY: Edit */}
-  {user?.role === "ADMIN" && (
-    <button
-      onClick={() => router.push(`/admin/products/${p._id}`)}
-      className="px-3 py-1.5 rounded-xl text-xs font-medium bg-gray-100 text-gray-600 hover:bg-amber-100 hover:text-amber-700 transition-colors"
-    >
-      Sửa
-    </button>
-  )}
+                            {/* ADMIN ONLY: Edit */}
+                            {user?.role === "ADMIN" && (
+                              <button
+                                onClick={() => router.push(`/admin/products/${p._id}`)}
+                                className="px-3 py-1.5 rounded-xl text-xs font-medium bg-gray-100 text-gray-600 hover:bg-amber-100 hover:text-amber-700 transition-colors"
+                              >
+                                Sửa
+                              </button>
+                            )}
 
-  {/* BOTH: Hide / Show */}
-  {p.status === "active" ? (
-    <button
-      onClick={() => handleHide(p._id)}
-      disabled={actionId === p._id}
-      className="px-3 py-1.5 rounded-xl text-xs font-medium border border-orange-100 text-orange-500 hover:bg-orange-50 transition-colors disabled:opacity-40"
-    >
-      Ẩn
-    </button>
-  ) : (
-    <button
-      onClick={async () => {
-        setActionId(p._id);
-        try {
-          await adminProductApi.show(p._id);
-          loadProducts();
-        } catch (e: unknown) {
-          alert(e instanceof Error ? e.message : "Lỗi");
-        } finally {
-          setActionId(null);
-        }
-      }}
-      disabled={actionId === p._id}
-      className="px-3 py-1.5 rounded-xl text-xs font-medium border border-emerald-100 text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-40"
-    >
-      Hiện
-    </button>
-  )}
+                            {/* BOTH: Hide / Show */}
+                            {p.status === "active" ? (
+                              <button
+                                onClick={() => handleHide(p._id)}
+                                disabled={actionId === p._id}
+                                className="px-3 py-1.5 rounded-xl text-xs font-medium border border-orange-100 text-orange-500 hover:bg-orange-50 transition-colors disabled:opacity-40"
+                              >
+                                Ẩn
+                              </button>
+                            ) : (
+                              <button
+                                onClick={async () => {
+                                  setActionId(p._id);
+                                  try {
+                                    await adminProductApi.show(p._id);
+                                    loadProducts();
+                                  } catch (e: unknown) {
+                                    alert(e instanceof Error ? e.message : "Lỗi");
+                                  } finally {
+                                    setActionId(null);
+                                  }
+                                }}
+                                disabled={actionId === p._id}
+                                className="px-3 py-1.5 rounded-xl text-xs font-medium border border-emerald-100 text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-40"
+                              >
+                                Hiện
+                              </button>
+                            )}
 
-  {/* ADMIN ONLY: Delete */}
-  {user?.role === "ADMIN" && (
-    <button
-      onClick={() => handleHardDelete(p)}
-      disabled={actionId === p._id}
-      className="px-3 py-1.5 rounded-xl text-xs font-medium border border-red-100 text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
-    >
-      Xóa
-    </button>
-  )}
+                            {/* ADMIN ONLY: Delete */}
+                            {user?.role === "ADMIN" && (
+                              <button
+                                onClick={() => handleHardDelete(p)}
+                                disabled={actionId === p._id}
+                                className="px-3 py-1.5 rounded-xl text-xs font-medium border border-red-100 text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
+                              >
+                                Xóa
+                              </button>
+                            )}
 
-</div>
+                          </div>
                         </td>
                       </tr>
                     );
