@@ -98,7 +98,7 @@ export default function UsersPage() {
                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Vai trò</th>
                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Trạng thái</th>
                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Ngày đăng ký</th>
-                    <th className="text-right px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Thao tác</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -135,11 +135,11 @@ export default function UsersPage() {
                           {user.status === "active" ? "Hoạt động" : "Đã khóa"}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-xs text-gray-400">
+                      <td className="px-5 py-4 text-xs text-gray-500">
                         {new Date(user.createdAt).toLocaleDateString("vi-VN")}
                       </td>
                       <td className="px-5 py-4">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center gap-2">
                           <Link
                             href={`/admin/users/${user._id}`}
                             className="px-3 py-1.5 rounded-xl text-xs font-medium bg-gray-100 text-gray-600 hover:bg-amber-100 hover:text-amber-700 transition-colors"

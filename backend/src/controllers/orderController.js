@@ -27,10 +27,15 @@ export const createOrderFromCart = async (req, res) => {
       return res.status(400).json({ message: "Giỏ hàng trống" });
     }
 
-    const totalPrice = cart.items.reduce(
+    const subTotal = cart.items.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0,
     );
+
+    const SHIPPING_FEE = 30000;
+    const SHIPPING_THRESHOLD = 500000;
+    const shippingFee = subTotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
+    const totalPrice = subTotal + shippingFee;
 
     const validMethods = ["cod", "momo", "vnpay"];
     const method = validMethods.includes(paymentMethod) ? paymentMethod : "cod";
@@ -38,6 +43,7 @@ export const createOrderFromCart = async (req, res) => {
     const order = await Order.create({
       user: userId,
       address: addressId,
+      shippingFee,
       totalPrice,
       status: "pending",
       orderType: "normal",

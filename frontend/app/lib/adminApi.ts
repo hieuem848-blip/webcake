@@ -111,6 +111,30 @@ export const adminDashboardApi = {
     adminFetch<{ year: number; monthly: { month: string; revenue: number; orders: number }[] }>(
       `/admin/dashboards/monthly-revenue${year ? `?year=${year}` : ""}`
     ),
+  getDailyRevenue: (year?: number, month?: number) => {
+    const params = new URLSearchParams();
+    if (year)  params.set("year",  String(year));
+    if (month) params.set("month", String(month));
+    return adminFetch<{ year: number; month: number; daily: { day: string; revenue: number; orders: number }[] }>(
+      `/admin/dashboards/daily-revenue?${params.toString()}`
+    );
+  },
+  getWeeklyRevenue: (year?: number, month?: number) => {
+    const params = new URLSearchParams();
+    if (year)  params.set("year",  String(year));
+    if (month) params.set("month", String(month));
+    return adminFetch<{ year: number; month: number; weekly: { week: string; revenue: number; orders: number }[] }>(
+      `/admin/dashboards/weekly-revenue?${params.toString()}`
+    );
+  },
+  getTopProducts: (limit = 5) =>
+    adminFetch<{ topProducts: { productId: string; name: string; totalQuantity: number; totalRevenue: number }[] }>(
+      `/admin/dashboards/top-products?limit=${limit}`
+    ),
+  getTopCustomers: (limit = 5) =>
+    adminFetch<{ topCustomers: { userId: string; name: string; email: string; totalOrders: number; totalSpent: number }[] }>(
+      `/admin/dashboards/top-customers?limit=${limit}`
+    ),
 };
 
 // ── INVENTORY ────────────────────────────────────────────────────────────────
