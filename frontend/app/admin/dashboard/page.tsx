@@ -587,7 +587,7 @@ export default function DashboardPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 pr-14 text-left">
+                        <td className="py-3 pr-1 text-left">
                           <span className="font-semibold text-gray-700">{c.totalOrders}</span>
                           <span className="text-xs text-gray-400 ml-1">đơn</span>
                         </td>
