@@ -131,6 +131,7 @@ export const toggleCategoryStatus = async (req, res) => {
       return res.status(404).json({ message: "Category not found" });
 
     category.isActive = !category.isActive;
+    category.status = category.isActive ? "active" : "inactive";
     await category.save();
 
     res.json(category);

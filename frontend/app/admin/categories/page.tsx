@@ -14,6 +14,7 @@ export default function CategoriesPage() {
   const [formDesc, setFormDesc] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const loadCategories = useCallback(async () => {
     setLoading(true);
@@ -50,8 +51,31 @@ export default function CategoriesPage() {
     catch (e: unknown) { alert(e instanceof Error ? e.message : "Lỗi"); }
   };
   const handleToggle = async (id: string) => {
-    try { await adminCategoryApi.toggle(id); loadCategories(); }
-    catch (e: unknown) { alert(e instanceof Error ? e.message : "Lỗi"); }
+    if (togglingId) return;
+
+    const cat = categories.find(c => c._id === id);
+    if (!cat) return;
+    const message = cat.isActive
+      ? "Ẩn danh mục này?\nCác sản phẩm trong danh mục có thể không hiển thị!"
+      : "Hiện lại danh mục này?";
+
+    if (!confirm(message)) return;
+
+    setTogglingId(id);
+    setCategories(prev =>
+      prev.map(c => c._id === id ? { ...c, isActive: !c.isActive } : c)
+    );
+
+    try {
+      await adminCategoryApi.toggle(id);
+    } catch (e: unknown) {
+      setCategories(prev =>
+        prev.map(c => c._id === id ? { ...c, isActive: !c.isActive } : c)
+      );
+      alert(e instanceof Error ? e.message : "Lỗi khi thay đổi trạng thái");
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   return (
@@ -161,9 +185,19 @@ export default function CategoriesPage() {
                           </button>
                           <button
                             onClick={() => handleToggle(cat._id)}
-                            className="px-3 py-1.5 rounded-xl text-xs font-medium border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+                            disabled={togglingId === cat._id}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors disabled:opacity-40 ${
+                              togglingId === cat._id
+                                ? "border-gray-200 text-gray-300 cursor-not-allowed"
+                                : cat.isActive
+                                  ? "border-orange-200 text-orange-500 hover:bg-orange-50"
+                                  : "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                            }`}
                           >
-                            {cat.isActive ? "Ẩn" : "Hiện"}
+                            {togglingId === cat._id
+                              ? <span className="flex items-center gap-1"><span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" /></span>
+                              : cat.isActive ? "Ẩn" : "Hiện"
+                            }
                           </button>
                           <button
                             onClick={() => handleDelete(cat._id)}
