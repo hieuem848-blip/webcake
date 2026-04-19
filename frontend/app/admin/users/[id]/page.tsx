@@ -18,6 +18,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
   const [toggling, setToggling] = useState(false);
   const [assigning, setAssigning] = useState(false);
   const [newRole, setNewRole] = useState("");
+  const [roleSuccess, setRoleSuccess] = useState(false);
 
   useEffect(() => {
     params.then(p => {
@@ -29,58 +30,47 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
     });
   }, [params]);
 
+  const reload = async () => { const d = await adminUserApi.getById(id); setDetail(d as unknown as UserDetail); };
+
   const handleToggle = async () => {
     setToggling(true);
-    try {
-      await adminUserApi.toggleStatus(id);
-      const d = await adminUserApi.getById(id);
-      setDetail(d as unknown as UserDetail);
-    } catch (e: unknown) { alert(e instanceof Error ? e.message : "Lỗi"); }
-    finally { setToggling(false); }
+    try { await adminUserApi.toggleStatus(id); await reload(); }
+    catch (e: unknown) { alert(e instanceof Error ? e.message : "Lỗi"); } finally { setToggling(false); }
   };
 
   const handleAssignRole = async () => {
     setAssigning(true);
-    try {
-      await adminUserApi.assignRole(id, newRole);
-      const d = await adminUserApi.getById(id);
-      setDetail(d as unknown as UserDetail);
-      alert("Đã cập nhật role!");
-    } catch (e: unknown) { alert(e instanceof Error ? e.message : "Lỗi"); }
-    finally { setAssigning(false); }
+    try { await adminUserApi.assignRole(id, newRole); await reload(); setRoleSuccess(true); setTimeout(() => setRoleSuccess(false), 2500); }
+    catch (e: unknown) { alert(e instanceof Error ? e.message : "Lỗi"); } finally { setAssigning(false); }
   };
 
-  if (loading) return (
-    <AdminShell>
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: "#C8A96A", borderTopColor: "transparent" }} />
-      </div>
-    </AdminShell>
-  );
-
+  if (loading) return <AdminShell><div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" /></div></AdminShell>;
   if (!detail) return <AdminShell><div className="text-center py-16 text-gray-400">Không tìm thấy người dùng</div></AdminShell>;
 
   const { user, orders, totalSpent } = detail;
 
   return (
     <AdminShell>
-      <div className="max-w-4xl space-y-6">
-        <div className="flex items-center gap-3">
-          <Link href="/admin/users" className="text-sm" style={{ color: "#C8A96A" }}>← Khách hàng</Link>
-          <span style={{ color: "#ccc" }}>/</span>
-          <h1 className="text-xl font-bold" style={{ fontFamily: "Georgia, serif", color: "#1a1a1a" }}>Chi tiết người dùng</h1>
+      <div className="w-full space-y-4">
+
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-2 text-sm">
+          <Link href="/admin/users" className="text-amber-500 hover:text-amber-600 transition-colors">← Khách hàng</Link>
+          <span className="text-gray-300">/</span>
+          <span className="font-semibold text-gray-700">{user.displayName}</span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Profile */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Left — Profile + Actions */}
           <div className="space-y-4">
-            <div className="bg-white rounded-2xl p-6 border text-center" style={{ borderColor: "#e8ddd0" }}>
-              <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-3"
-                style={{ background: "#C8A96A" }}>
-                {user.displayName?.charAt(0) || "?"}
+
+            {/* Profile card */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center">
+              <div className="w-16 h-16 rounded-full bg-amber-500 flex items-center justify-center text-2xl font-bold text-white mx-auto mb-3">
+                {user.displayName?.charAt(0) ?? "?"}
               </div>
-              <h2 className="font-bold" style={{ color: "#1a1a1a" }}>{user.displayName}</h2>
-              <p className="text-sm mt-0.5" style={{ color: "#888" }}>{user.email}</p>
+              <h2 className="font-bold text-gray-800">{user.displayName}</h2>
+              <p className="text-sm text-gray-400 mt-0.5">{user.email}</p>
               <div className="mt-3">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${user.status === "active" ? "text-green-700 bg-green-50 border-green-200" : "text-red-600 bg-red-50 border-red-200"}`}>
                   {user.status === "active" ? "Hoạt động" : "Đã khóa"}
@@ -88,69 +78,75 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 border space-y-3" style={{ borderColor: "#e8ddd0" }}>
-              <h3 className="font-semibold text-sm" style={{ color: "#1a1a1a" }}>Thông tin</h3>
+            {/* Thông tin */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-2.5">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Thông tin</h3>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span style={{ color: "#888" }}>SĐT</span><span style={{ color: "#333" }}>{user.phone || "—"}</span></div>
-                <div className="flex justify-between"><span style={{ color: "#888" }}>Vai trò</span><span style={{ color: "#333" }}>{user.role}</span></div>
-                <div className="flex justify-between"><span style={{ color: "#888" }}>Tham gia</span><span style={{ color: "#333" }}>{new Date(user.createdAt).toLocaleDateString("vi-VN")}</span></div>
-                <div className="flex justify-between"><span style={{ color: "#888" }}>Tổng chi</span><span className="font-semibold" style={{ color: "#C8A96A" }}>{formatPrice(totalSpent)}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">SĐT</span><span className="text-gray-700">{user.phone || "—"}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Vai trò</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100 font-medium">{user.role}</span>
+                </div>
+                <div className="flex justify-between"><span className="text-gray-400">Tham gia</span><span className="text-gray-700">{new Date(user.createdAt).toLocaleDateString("vi-VN")}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Tổng đơn</span><span className="text-gray-700">{orders.length} đơn</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Tổng chi</span><span className="font-bold text-amber-600">{formatPrice(totalSpent)}</span></div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 border space-y-3" style={{ borderColor: "#e8ddd0" }}>
-              <h3 className="font-semibold text-sm" style={{ color: "#1a1a1a" }}>Phân quyền</h3>
+            {/* Phân quyền */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Phân quyền</h3>
               <select value={newRole} onChange={e => setNewRole(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border text-sm outline-none"
-                style={{ borderColor: "#e0d0b8", background: "#fdf9f4", color: "#333" }}>
+                className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-amber-400 bg-gray-50 text-gray-700">
                 <option value="USER">USER</option>
                 <option value="STAFF">STAFF</option>
                 <option value="ADMIN">ADMIN</option>
               </select>
+              {roleSuccess && <p className="text-xs text-green-600 text-center">✓ Đã cập nhật role</p>}
               <button onClick={handleAssignRole} disabled={assigning}
-                className="w-full py-2 rounded-xl text-sm font-medium text-white disabled:opacity-60"
-                style={{ background: "#C8A96A" }}>
+                className="w-full py-2 rounded-xl text-sm font-medium text-white bg-amber-500 hover:bg-amber-600 disabled:opacity-60 transition-colors">
                 {assigning ? "Đang lưu..." : "Cập nhật role"}
-              </button>
-              <button onClick={handleToggle} disabled={toggling}
-                className={`w-full py-2 rounded-xl text-sm font-medium border disabled:opacity-60 ${user.status === "active" ? "border-red-200 text-red-600 hover:bg-red-50" : "border-green-200 text-green-700 hover:bg-green-50"}`}>
-                {toggling ? "..." : user.status === "active" ? "Khóa tài khoản" : "Mở khóa tài khoản"}
               </button>
             </div>
           </div>
 
-          {/* Orders */}
+          {/* Right — Orders */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: "#e8ddd0" }}>
-              <div className="px-6 py-4 border-b" style={{ borderColor: "#f0e8dc" }}>
-                <h2 className="font-semibold" style={{ color: "#1a1a1a" }}>Lịch sử đơn hàng ({orders.length})</h2>
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Lịch sử đơn hàng</h2>
+                <span className="text-xs text-gray-400">{orders.length} đơn</span>
               </div>
               {orders.length === 0 ? (
-                <div className="text-center py-12 text-gray-400 text-sm">Chưa có đơn hàng nào</div>
+                <div className="flex flex-col items-center justify-center py-16 text-gray-300">
+                  <svg width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                    <rect x="9" y="3" width="6" height="4" rx="2"/>
+                  </svg>
+                  <p className="mt-2 text-sm">Chưa có đơn hàng nào</p>
+                </div>
               ) : (
                 <table className="w-full text-sm">
                   <thead>
-                    <tr style={{ background: "#fdf6ec", borderBottom: "1px solid #e8ddd0" }}>
-                      <th className="text-left px-4 py-3 font-semibold" style={{ color: "#5a4a35" }}>Mã đơn</th>
-                      <th className="text-left px-4 py-3 font-semibold" style={{ color: "#5a4a35" }}>Ngày</th>
-                      <th className="text-left px-4 py-3 font-semibold" style={{ color: "#5a4a35" }}>Tổng tiền</th>
-                      <th className="text-left px-4 py-3 font-semibold" style={{ color: "#5a4a35" }}>Trạng thái</th>
+                    <tr className="border-b border-gray-100 bg-gray-50">
+                      <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Mã đơn</th>
+                      <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Ngày</th>
+                      <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tổng tiền</th>
+                      <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Trạng thái</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {orders.map((order, i) => {
+                  <tbody className="divide-y divide-gray-50">
+                    {orders.map(order => {
                       const st = ORDER_STATUS[order.status] ?? { label: order.status, color: "text-gray-500 bg-gray-50 border-gray-200" };
                       return (
-                        <tr key={order._id} style={{ borderBottom: i < orders.length - 1 ? "1px solid #f0e8dc" : "none" }}
-                          className="hover:bg-amber-50/30 transition-colors">
-                          <td className="px-4 py-3">
-                            <Link href={`/admin/orders/${order._id}`} className="font-mono text-xs hover:underline" style={{ color: "#C8A96A" }}>
+                        <tr key={order._id} className="hover:bg-amber-50/30 transition-colors">
+                          <td className="px-5 py-3.5">
+                            <Link href={`/admin/orders/${order._id}`} className="font-mono text-xs font-semibold text-amber-500 hover:text-amber-600 hover:underline">
                               #{order._id.slice(-8).toUpperCase()}
                             </Link>
                           </td>
-                          <td className="px-4 py-3 text-xs" style={{ color: "#888" }}>{new Date(order.createdAt).toLocaleDateString("vi-VN")}</td>
-                          <td className="px-4 py-3 font-medium" style={{ color: "#C8A96A" }}>{formatPrice(order.totalPrice)}</td>
-                          <td className="px-4 py-3">
+                          <td className="px-5 py-3.5 text-xs text-gray-400">{new Date(order.createdAt).toLocaleDateString("vi-VN")}</td>
+                          <td className="px-5 py-3.5 font-semibold text-amber-600">{formatPrice(order.totalPrice)}</td>
+                          <td className="px-5 py-3.5">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${st.color}`}>{st.label}</span>
                           </td>
                         </tr>
@@ -165,4 +161,4 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
       </div>
     </AdminShell>
   );
-}
+} 

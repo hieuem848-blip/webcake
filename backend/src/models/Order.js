@@ -30,6 +30,11 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    paymentMethod: {
+      type: String,
+      enum: ["cod", "momo", "vnpay"],
+      default: "cod",
+    },
   },
   { timestamps: true }
 );

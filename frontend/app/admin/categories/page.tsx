@@ -149,7 +149,7 @@ export default function CategoriesPage() {
                     <tr key={cat._id} className="hover:bg-amber-50/40 transition-colors">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                          <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
                             <svg width="14" height="14" fill="none" stroke="#d97706" strokeWidth="2" viewBox="0 0 24 24">
                               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
                             </svg>
@@ -158,7 +158,7 @@ export default function CategoriesPage() {
                         </div>
                       </td>
                       <td className="px-5 py-4">
-                        <code className="text-xs px-2 py-1 bg-gray-100 rounded-md text-gray-500 font-mono">
+                        <code className="text-xs px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 font-medium">
                           {cat.slug}
                         </code>
                       </td>

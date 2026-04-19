@@ -103,7 +103,7 @@ export default function CheckoutPage() {
     setPlacing(true);
     try {
       // Bước 1: tạo order
-      const { orderId: newOrderId } = await orderApi.createFromCart({ addressId: selectedAddressId });
+      const { orderId: newOrderId } = await orderApi.createFromCart({ addressId: selectedAddressId, paymentMethod });
       setOrderId(newOrderId);
 
       // Bước 2: xử lý theo phương thức thanh toán

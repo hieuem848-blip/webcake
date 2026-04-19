@@ -83,6 +83,8 @@ export interface AdminOrder {
   orderType: "normal" | "custom"; createdAt: string;
   user?: { _id: string; displayName: string; email: string; phone: string };
   address?: { receiverName: string; phone: string; address: string };
+  paymentMethod?: "cod" | "momo" | "vnpay" | null;
+  orderItems?: { product?: { name: string }; customRequest?: { description: string }; quantity: number }[];
 }
 export interface AdminOrderDetail {
   order: AdminOrder;

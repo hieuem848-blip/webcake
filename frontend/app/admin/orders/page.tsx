@@ -14,6 +14,22 @@ function Badge({ status }: { status: string }) {
   );
 }
 
+const PAYMENT_METHOD_LABELS: Record<string, { label: string; color: string }> = {
+  cod:   { label: "COD",   color: "text-green-600 bg-green-100" },
+  momo:  { label: "MoMo",  color: "text-pink-700 bg-pink-50 border border-pink-100" },
+  vnpay: { label: "VNPay", color: "text-blue-700 bg-blue-50 border border-blue-100" },
+};
+
+function PaymentBadge({ method }: { method?: string | null }) {
+  if (!method) return <span className="text-xs text-gray-300">—</span>;
+  const m = PAYMENT_METHOD_LABELS[method] ?? { label: method, color: "text-gray-500 bg-gray-100" };
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${m.color}`}>
+      {m.label}
+    </span>
+  );
+}
+
 const STATUS_TABS = [
   { value: "", label: "Tất cả" },
   { value: "pending",   label: "Chờ xác nhận" },
@@ -128,9 +144,11 @@ function OrdersContent() {
                 <tr className="border-b border-gray-100 bg-gray-50">
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Mã đơn</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Khách hàng</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Loại</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Sản phẩm</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Danh mục</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tổng tiền</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Trạng thái</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Thanh toán</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Ngày tạo</th>
                   <th className="text-right px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Chi tiết</th>
                 </tr>
@@ -147,20 +165,53 @@ function OrdersContent() {
                       <p className="font-semibold text-gray-800 text-sm">{order.user?.displayName ?? "—"}</p>
                       <p className="text-xs text-gray-400 mt-0.5">{order.user?.phone ?? ""}</p>
                     </td>
+                    <td className="px-5 py-4 max-w-[180px]">
+                      {order.orderItems && order.orderItems.length > 0 ? (
+                        <div className="space-y-0.5">
+                          {order.orderItems.slice(0, 2).map((item, i) => (
+                            <p key={i} className="text-xs text-gray-700 truncate">
+                              {item.product?.name ?? item.customRequest?.description ?? "Bánh custom"}
+                              <span className="text-gray-400 ml-1">×{item.quantity}</span>
+                            </p>
+                          ))}
+                          {order.orderItems.length > 2 && (
+                            <p className="text-xs text-gray-400">+{order.orderItems.length - 2} sản phẩm</p>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-300">—</span>
+                      )}
+                    </td>
                     <td className="px-5 py-4">
-                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                        order.orderType === "custom"
-                          ? "text-purple-700 bg-purple-50 border border-purple-100"
-                          : "text-gray-600 bg-gray-100"
-                      }`}>
-                        {order.orderType === "custom" ? "✦ Custom" : "Thường"}
-                      </span>
+                      {(() => {
+                        if (order.orderType === "custom") {
+                          return <span className="text-xs px-2.5 py-1 rounded-full font-medium text-purple-700 bg-purple-50 border border-purple-100">✦ Bánh custom</span>;
+                        }
+                        const cats = [...new Set(
+                          (order.orderItems ?? [])
+                            .map(i => i.product?.category?.name)
+                            .filter(Boolean)
+                        )];
+                        if (cats.length === 0) return <span className="text-xs text-gray-300">—</span>;
+                        return (
+                          <div className="flex flex-wrap gap-1">
+                            {cats.map((cat, i) => (
+                              <span key={i} className="text-xs px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 font-medium">
+                                {cat}
+                              </span>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td className="px-5 py-4">
                       <span className="font-bold text-amber-600">{formatPrice(order.totalPrice)}</span>
                     </td>
                     <td className="px-5 py-4">
                       <Badge status={order.status} />
+                    </td>
+                    <td className="px-5 py-4">
+                      <PaymentBadge method={order.paymentMethod} />
                     </td>
                     <td className="px-5 py-4 text-xs text-gray-400">
                       {new Date(order.createdAt).toLocaleDateString("vi-VN")}

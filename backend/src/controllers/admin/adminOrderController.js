@@ -27,11 +27,30 @@ export const getAllOrders = async (req, res) => {
     }
 
     const orders = await Order.find(filter)
-      .populate("user", "displayName email phone") // fullname -> displayName
+      .populate("user", "displayName email phone")
       .populate("address")
       .sort({ createdAt: -1 });
 
-    res.json(orders);
+    // Lấy tên sản phẩm đầu tiên của mỗi đơn để hiển thị trên bảng
+    const orderIds = orders.map((o) => o._id);
+    const items = await OrderItem.find({ order: { $in: orderIds } })
+      .populate({ path: "product", select: "name category", populate: { path: "category", select: "name" } })
+      .populate("customRequest", "description");
+
+    // Map items vào từng order
+    const itemsMap = {};
+    items.forEach((item) => {
+      const oid = item.order.toString();
+      if (!itemsMap[oid]) itemsMap[oid] = [];
+      itemsMap[oid].push(item);
+    });
+
+    const result = orders.map((o) => ({
+      ...o.toObject(),
+      orderItems: itemsMap[o._id.toString()] || [],
+    }));
+
+    res.json(result);
   } catch (error) {
     console.error("getAllOrders error:", error);
     res.status(500).json({ message: "Lỗi hệ thống" });

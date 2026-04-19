@@ -15,7 +15,7 @@ import CustomCakeRequest from "../models/CustomCakeRequest.js";
 export const createOrderFromCart = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { addressId } = req.body;
+    const { addressId, paymentMethod } = req.body;
 
     const address = await Address.findOne({ _id: addressId, user: userId });
     if (!address) {
@@ -32,12 +32,16 @@ export const createOrderFromCart = async (req, res) => {
       0,
     );
 
+    const validMethods = ["cod", "momo", "vnpay"];
+    const method = validMethods.includes(paymentMethod) ? paymentMethod : "cod";
+
     const order = await Order.create({
       user: userId,
       address: addressId,
       totalPrice,
       status: "pending",
       orderType: "normal",
+      paymentMethod: method,
     });
 
     const orderItems = cart.items.map((item) => ({
@@ -68,7 +72,7 @@ export const createOrderFromCart = async (req, res) => {
 export const createOrderFromCustomCake = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { customRequestId, addressId } = req.body;
+    const { customRequestId, addressId, paymentMethod } = req.body;
 
     const customRequest = await CustomCakeRequest.findOne({
       _id: customRequestId,
@@ -87,12 +91,16 @@ export const createOrderFromCustomCake = async (req, res) => {
 
     const price = customRequest.aiSuggestedPrice;
 
+    const validMethods = ["cod", "momo", "vnpay"];
+    const method = validMethods.includes(paymentMethod) ? paymentMethod : "cod";
+
     const order = await Order.create({
       user: userId,
       address: addressId,
       totalPrice: price,
       status: "pending",
       orderType: "custom",
+      paymentMethod: method,
     });
 
     await OrderItem.create({
