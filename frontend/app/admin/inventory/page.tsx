@@ -10,6 +10,7 @@ import {
   Package, Plus, Minus, Trash2, AlertCircle, X, History,
   RefreshCw, Pencil, Download, Search, Filter, ChevronLeft,
   ChevronRight, AlertTriangle, TrendingDown, DollarSign, Calendar,
+  Upload, CheckCircle, FileSpreadsheet,
 } from 'lucide-react';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -67,6 +68,16 @@ export default function InventoryPage() {
   const [toast, setToast] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
+
+  // ── import excel ──
+  const [showImport, setShowImport] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<{
+    success: number; failed: number;
+    results: { row: number; name: string; quantity: number; unit: string; stockAfter: number; isNew: boolean }[];
+    errors: { row: number; name?: string; message: string }[];
+  } | null>(null);
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
@@ -223,6 +234,42 @@ useEffect(() => {
     if (t) adminInventoryApi.exportLogsCSV(t, { fromDate: logFilter.fromDate, toDate: logFilter.toDate, type: logFilter.type !== 'all' ? logFilter.type : undefined });
   };
 
+  // ── import excel ──
+  const handleImportExcel = async () => {
+    if (!importFile) return;
+    setImportLoading(true);
+    setImportResult(null);
+    try {
+      const result = await adminInventoryApi.importExcel(importFile);
+      setImportResult(result);
+      if (result.success > 0) {
+        await loadAll();
+        await loadIngredients();
+        showToast(`✅ Nhập thành công ${result.success} dòng từ Excel!`);
+      }
+    } catch (e: unknown) {
+      setImportResult(null);
+      setError(e instanceof Error ? e.message : 'Lỗi nhập file');
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const handleDownloadTemplate = () => {
+    const header = ['Tên nguyên liệu', 'Đơn vị', 'Danh mục', 'Số lượng nhập', 'Giá nhập (VNĐ)', 'Nhà cung cấp', 'Ngày hết hạn', 'Số lô', 'Lý do', 'Ngưỡng cảnh báo', 'Ghi chú'];
+    const sample = [
+      ['Bột mì số 11', 'kg', 'Bột & Đường', '50', '25000', 'Cty ABC', '2026-12-31', 'Lô A-001', 'Nhập tháng 4', '5', 'Bảo quản nơi khô ráo'],
+      ['Trứng gà', 'quả', 'Trứng & Sữa', '200', '4000', 'Trang trại XYZ', '', '', '', '20', ''],
+    ];
+    const bom = '\uFEFF';
+    const csv = [header, ...sample].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'mau-nhap-kho.csv'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // ─────────────────────────────────────────────────────────────────────────
   if (loading) return (
     <AdminShell>
@@ -251,7 +298,11 @@ useEffect(() => {
             <h1 className="text-2xl font-bold text-gray-800">Quản lý kho nguyên liệu</h1>
             <p className="text-gray-500 text-sm mt-1">Theo dõi tồn kho, nhập xuất, hạn sử dụng và chi phí</p>
           </div>
-          <div>
+          <div className="flex gap-2">
+            <button onClick={() => { setShowImport(true); setImportFile(null); setImportResult(null); setError(''); }}
+              className="flex items-center gap-1.5 text-sm text-white bg-purple-600 hover:bg-purple-700 rounded-lg px-3 py-2 transition">
+              <Upload className="w-4 h-4" /> Nhập từ Excel
+            </button>
             <button onClick={handleExportStock} className="flex items-center gap-1.5 text-sm text-white bg-green-600 hover:bg-green-700 rounded-lg px-3 py-2 transition">
               <Download className="w-4 h-4" /> Xuất Excel
             </button>
@@ -824,6 +875,165 @@ useEffect(() => {
                   {submitting ? 'Đang xử lý...' : 'Xác nhận'}
                 </button>
                 <button onClick={() => setMvModal(false)} className="px-4 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50">Hủy</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════ MODAL: NHẬP TỪ EXCEL ═══════════════ */}
+        {showImport && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center px-6 py-4 border-b">
+                <div className="flex items-center gap-2">
+                  <FileSpreadsheet className="w-5 h-5 text-purple-600" />
+                  <h2 className="text-lg font-bold text-gray-800">Nhập kho từ Excel / CSV</h2>
+                </div>
+                <button onClick={() => setShowImport(false)}><X className="w-5 h-5 text-gray-400" /></button>
+              </div>
+
+              <div className="px-6 py-5 space-y-5">
+                {/* Hướng dẫn */}
+                {!importResult && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800 space-y-1.5">
+                    <p className="font-semibold">📋 Hướng dẫn:</p>
+                    <ul className="list-disc list-inside space-y-1 text-blue-700">
+                      <li>File hỗ trợ: <strong>.xlsx, .xls, .csv</strong> (tối đa 5MB)</li>
+                      <li>Dòng đầu tiên là tiêu đề cột (xem file mẫu)</li>
+                      <li>Nếu nguyên liệu <strong>đã có</strong> trong kho → cộng thêm số lượng</li>
+                      <li>Nếu nguyên liệu <strong>chưa có</strong> → tự động tạo mới</li>
+                      <li>Cột bắt buộc: <strong>Tên nguyên liệu, Đơn vị, Số lượng nhập</strong></li>
+                    </ul>
+                    <button onClick={handleDownloadTemplate}
+                      className="mt-2 flex items-center gap-1.5 text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition">
+                      <Download className="w-3.5 h-3.5" /> Tải file mẫu (.csv)
+                    </button>
+                  </div>
+                )}
+
+                {/* Upload */}
+                {!importResult && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 mb-2 block">Chọn file Excel/CSV</label>
+                    <label className={`flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-xl cursor-pointer transition
+                      ${importFile ? 'border-purple-400 bg-purple-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'}`}>
+                      <input type="file" accept=".xlsx,.xls,.csv" className="hidden"
+                        onChange={e => {
+                          const f = e.target.files?.[0] || null;
+                          setImportFile(f);
+                          setImportResult(null);
+                          setError('');
+                        }} />
+                      {importFile ? (
+                        <div className="text-center">
+                          <FileSpreadsheet className="w-10 h-10 text-purple-500 mx-auto mb-2" />
+                          <p className="font-medium text-purple-700 text-sm">{importFile.name}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{(importFile.size / 1024).toFixed(1)} KB — Nhấn để đổi file</p>
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                          <Upload className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                          <p className="text-sm text-gray-500">Kéo thả hoặc <span className="text-purple-600 font-medium">nhấn để chọn file</span></p>
+                          <p className="text-xs text-gray-400 mt-1">.xlsx, .xls, .csv — tối đa 5MB</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                )}
+
+                {error && <p className="text-red-500 text-sm bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+
+                {/* Kết quả sau khi nhập */}
+                {importResult && (
+                  <div className="space-y-4">
+                    {/* Tóm tắt */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+                        <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-1" />
+                        <p className="text-2xl font-bold text-green-700">{importResult.success}</p>
+                        <p className="text-sm text-green-600">Dòng nhập thành công</p>
+                      </div>
+                      <div className={`border rounded-xl p-4 text-center ${importResult.failed > 0 ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                        <AlertCircle className={`w-8 h-8 mx-auto mb-1 ${importResult.failed > 0 ? 'text-red-500' : 'text-gray-300'}`} />
+                        <p className={`text-2xl font-bold ${importResult.failed > 0 ? 'text-red-700' : 'text-gray-400'}`}>{importResult.failed}</p>
+                        <p className={`text-sm ${importResult.failed > 0 ? 'text-red-600' : 'text-gray-400'}`}>Dòng lỗi</p>
+                      </div>
+                    </div>
+
+                    {/* Chi tiết thành công */}
+                    {importResult.results.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-gray-600 mb-2">Chi tiết nhập thành công:</p>
+                        <div className="border border-gray-100 rounded-xl overflow-hidden max-h-48 overflow-y-auto">
+                          <table className="min-w-full text-xs divide-y divide-gray-100">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                {['Dòng', 'Nguyên liệu', 'Nhập', 'Tồn sau', 'Trạng thái'].map(h => (
+                                  <th key={h} className="px-3 py-2 text-left font-semibold text-gray-500">{h}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                              {importResult.results.map(r => (
+                                <tr key={r.row} className="hover:bg-gray-50">
+                                  <td className="px-3 py-2 text-gray-400">{r.row}</td>
+                                  <td className="px-3 py-2 font-medium text-gray-800">{r.name}</td>
+                                  <td className="px-3 py-2 text-green-700 font-semibold">+{r.quantity} {r.unit}</td>
+                                  <td className="px-3 py-2 text-gray-600">{r.stockAfter} {r.unit}</td>
+                                  <td className="px-3 py-2">
+                                    <span className={`px-2 py-0.5 rounded-full font-medium ${r.isNew ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}`}>
+                                      {r.isNew ? 'Tạo mới' : 'Cập nhật'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Chi tiết lỗi */}
+                    {importResult.errors.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-red-600 mb-2">Các dòng bị lỗi:</p>
+                        <div className="space-y-1.5">
+                          {importResult.errors.map((e, i) => (
+                            <div key={i} className="bg-red-50 border border-red-100 rounded-lg px-3 py-2 text-xs text-red-700">
+                              <span className="font-semibold">Dòng {e.row}{e.name ? ` (${e.name})` : ''}:</span> {e.message}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="px-6 py-4 border-t flex gap-2">
+                {!importResult ? (
+                  <>
+                    <button onClick={handleImportExcel} disabled={!importFile || importLoading}
+                      className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2">
+                      {importLoading ? (
+                        <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Đang xử lý...</>
+                      ) : (
+                        <><Upload className="w-4 h-4" /> Bắt đầu nhập kho</>
+                      )}
+                    </button>
+                    <button onClick={() => setShowImport(false)} className="px-4 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50">Hủy</button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => { setImportFile(null); setImportResult(null); setError(''); }}
+                      className="flex-1 border border-purple-300 text-purple-700 py-2 rounded-lg hover:bg-purple-50 transition text-sm font-medium">
+                      Nhập thêm file khác
+                    </button>
+                    <button onClick={() => setShowImport(false)} className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition text-sm font-medium">
+                      Đóng
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>

@@ -22,7 +22,8 @@
     "mongoose": "^9.1.1",
     "multer": "^2.1.1",
     "slugify": "^1.6.6",
-    "vnpay": "^2.4.4"
+    "vnpay": "^2.4.4",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

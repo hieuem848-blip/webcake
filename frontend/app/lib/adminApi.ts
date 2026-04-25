@@ -294,6 +294,26 @@ export const adminInventoryApi = {
         URL.revokeObjectURL(blobUrl);
       });
   },
+
+  importExcel: (file: File): Promise<{
+    success: number; failed: number;
+    results: { row: number; name: string; quantity: number; unit: string; stockAfter: number; isNew: boolean }[];
+    errors: { row: number; name?: string; message: string }[];
+  }> => {
+    const token = getAdminToken();
+    const formData = new FormData();
+    formData.append("file", file);
+    const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+    return fetch(`${BASE}/admin/inventory/import-excel`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    }).then(async (r) => {
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.message || "Lỗi nhập kho");
+      return data;
+    });
+  },
 };
 
 // ── PRODUCTS ─────────────────────────────────────────────────────────────────

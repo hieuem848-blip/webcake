@@ -397,6 +397,183 @@ export const exportInventoryCSV = async (req, res) => {
   }
 };
 
+// ─── IMPORT FROM EXCEL/CSV ────────────────────────────────────────────────────
+
+// POST /admin/inventory/import-excel
+// Body: multipart/form-data với field "file" là file .xlsx / .xls / .csv
+export const importFromExcel = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "Vui lòng tải lên file Excel hoặc CSV" });
+
+    const XLSXModule = await import("xlsx");
+    const XLSX = XLSXModule.default ?? XLSXModule;
+    const workbook = XLSX.readFile(req.file.path);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+    if (!rows || rows.length === 0)
+      return res.status(400).json({ message: "File không có dữ liệu hoặc sai định dạng" });
+
+    // Map tên cột tiếng Việt → field
+    const COL_MAP = {
+      "Tên nguyên liệu": "name",
+      "Đơn vị": "unit",
+      "Danh mục": "category",
+      "Số lượng nhập": "quantity",
+      "Giá nhập (VNĐ)": "costPrice",
+      "Nhà cung cấp": "supplier",
+      "Ngày hết hạn": "expiryDate",
+      "Số lô": "batchNote",
+      "Lý do": "reason",
+      "Ngưỡng cảnh báo": "minThreshold",
+      "Ghi chú": "note",
+    };
+
+    // Reverse map danh mục tiếng Việt → key
+    const CAT_REVERSE = {};
+    for (const [k, v] of Object.entries(CATEGORIES)) CAT_REVERSE[v.toLowerCase()] = k;
+
+    const results = [];
+    const errors = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const raw = rows[i];
+      // Chuẩn hoá key
+      const row = {};
+      for (const [col, field] of Object.entries(COL_MAP)) {
+        if (raw[col] !== undefined) row[field] = raw[col];
+      }
+
+      const rowNum = i + 2; // dòng trong Excel (header = 1)
+
+      if (!row.name || String(row.name).trim() === "") {
+        errors.push({ row: rowNum, message: "Thiếu tên nguyên liệu" });
+        continue;
+      }
+      if (!row.unit || String(row.unit).trim() === "") {
+        errors.push({ row: rowNum, name: row.name, message: "Thiếu đơn vị" });
+        continue;
+      }
+
+      const name = String(row.name).trim();
+      const unit = String(row.unit).trim();
+      const quantity = parseFloat(row.quantity) || 0;
+      const costPrice = parseFloat(row.costPrice) || 0;
+      const supplier = String(row.supplier || "").trim();
+      const batchNote = String(row.batchNote || "").trim();
+      const reason = String(row.reason || "").trim();
+      const minThreshold = parseFloat(row.minThreshold) || 0;
+      const note = String(row.note || "").trim();
+
+      // Danh mục: hỗ trợ key lẫn label
+      let category = "khac";
+      if (row.category) {
+        const catRaw = String(row.category).trim();
+        if (CATEGORIES[catRaw]) {
+          category = catRaw;
+        } else {
+          const mapped = CAT_REVERSE[catRaw.toLowerCase()];
+          if (mapped) category = mapped;
+        }
+      }
+
+      // Ngày hết hạn
+      let expiryDate = null;
+      if (row.expiryDate) {
+        // Excel thường lưu số serial hoặc chuỗi
+        if (typeof row.expiryDate === "number") {
+          const XLSX2Module = await import("xlsx");
+          const XLSX2 = XLSX2Module.default ?? XLSX2Module;
+          expiryDate = new Date(XLSX2.SSF.parse_date_code(row.expiryDate));
+        } else {
+          const d = new Date(row.expiryDate);
+          if (!isNaN(d.getTime())) expiryDate = d;
+        }
+      }
+
+      if (quantity <= 0) {
+        errors.push({ row: rowNum, name, message: "Số lượng nhập phải lớn hơn 0" });
+        continue;
+      }
+
+      try {
+        // Tìm nguyên liệu cùng tên (không phân biệt hoa thường)
+        let ingredient = await Ingredient.findOne({
+          name: { $regex: `^${name}$`, $options: "i" },
+          isDeleted: false,
+        });
+
+        let isNew = false;
+        if (!ingredient) {
+          // Tạo mới
+          ingredient = await Ingredient.create({
+            name, unit, category,
+            stock: 0,
+            minThreshold,
+            costPrice: costPrice || 0,
+            supplier,
+            note,
+          });
+          isNew = true;
+        }
+
+        const stockBefore = ingredient.stock;
+        ingredient.stock += quantity;
+        if (costPrice > 0) ingredient.costPrice = costPrice;
+        if (supplier) ingredient.supplier = supplier;
+        await ingredient.save();
+
+        await InventoryLog.create({
+          ingredient: ingredient._id,
+          ingredientName: ingredient.name,
+          ingredientUnit: ingredient.unit,
+          type: "import",
+          quantity,
+          costPrice: costPrice || 0,
+          supplier: supplier || "",
+          expiryDate,
+          batchNote,
+          reason: reason || "Nhập kho từ file Excel",
+          stockBefore,
+          stockAfter: ingredient.stock,
+          createdBy: req.user?._id,
+        });
+
+        results.push({
+          row: rowNum,
+          name: ingredient.name,
+          quantity,
+          unit: ingredient.unit,
+          stockAfter: ingredient.stock,
+          isNew,
+        });
+      } catch (err) {
+        errors.push({ row: rowNum, name, message: err.message });
+      }
+    }
+
+    // Xoá file tạm
+    const fs = await import("fs");
+    try { fs.unlinkSync(req.file.path); } catch (_) {}
+
+    res.json({
+      success: results.length,
+      failed: errors.length,
+      results,
+      errors,
+    });
+  } catch (error) {
+    console.error("importFromExcel error:", error);
+    // Xoá file tạm nếu lỗi
+    if (req.file?.path) {
+      const fs = await import("fs");
+      try { fs.unlinkSync(req.file.path); } catch (_) {}
+    }
+    res.status(500).json({ message: "Lỗi hệ thống: " + error.message });
+  }
+};
+
 // GET /admin/inventory/export-logs-csv
 export const exportLogsCSV = async (req, res) => {
   try {
