@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
 
         {/* TEXT */}
         <p className="text-gray-700 text-xl leading-relaxed mb-10">
-          Cocoon sẽ gửi cho bạn mã xác minh vào điện thoại của bạn.
+          Witchy Barkery sẽ gửi cho bạn mã xác minh vào điện thoại của bạn.
         </p>
 
         {/* INPUT */}
