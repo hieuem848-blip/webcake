@@ -581,7 +581,7 @@ export default function DashboardPage() {
                               <p className="font-semibold text-gray-800 truncate max-w-[130px]">
                                 {c.name}
                               </p>
-                              <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[130px]">
+                              <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[140px]">
                                 {c.email}
                               </p>
                             </div>

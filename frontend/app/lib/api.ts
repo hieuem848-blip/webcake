@@ -14,7 +14,15 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 
   const res = await fetch(`${BASE_URL}${path}`, { ...options, headers, credentials: "include" });
 
-  if (res.status === 401) { removeToken(); if (typeof window !== "undefined") window.location.href = "/auth/login"; }
+  if (res.status === 401) {
+  const isLogin = path.includes("/auth/signIn");
+
+  if (!isLogin) {
+    removeToken();
+    window.location.href = "/auth/login";
+  }
+}
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: "Lỗi không xác định" }));
     throw new Error(err.message || `HTTP ${res.status}`);

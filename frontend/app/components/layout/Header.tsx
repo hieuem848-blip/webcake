@@ -6,6 +6,11 @@ import { useCart } from "@/app/context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
 import { useState, useRef, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { LoginForm } from "@/app/auth/login/page";
+import { RegisterForm } from "@/app/auth/register/page";
+import { ForgotForm } from "@/app/auth/forgot-password/page";
+
+type AuthModalView = "login" | "register" | "forgot" | null;
 
 export default function Header() {
   const { totalItems } = useCart();
@@ -14,6 +19,7 @@ export default function Header() {
   const pathname = usePathname();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [modalView, setModalView] = useState<AuthModalView>(null);
   const dropRef = useRef<HTMLDivElement>(null);
 
   // Đóng dropdown khi click ra ngoài
@@ -45,6 +51,39 @@ export default function Header() {
   ];
 
   return (
+    <>
+      {/* Modal overlay */}
+      {modalView && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center px-4"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
+          onClick={() => setModalView(null)}
+        >
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md">
+            {modalView === "login" && (
+              <LoginForm
+                onSuccess={() => setModalView(null)}
+                onNavigate={setModalView}
+                onClose={() => setModalView(null)}
+              />
+            )}
+            {modalView === "register" && (
+              <RegisterForm
+                onSuccess={() => setModalView("login")}
+                onNavigate={setModalView}
+                onClose={() => setModalView(null)}
+              />
+            )}
+            {modalView === "forgot" && (
+              <ForgotForm
+                onNavigate={setModalView}
+                onClose={() => setModalView(null)}
+              />
+            )}
+          </div>
+        </div>
+      )}
+
     <header className="sticky top-9 z-40 w-full border-b bg-[#FEFBF4] shadow-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-between py-4">
 
@@ -107,15 +146,13 @@ export default function Header() {
               )}
             </div>
           ) : (
-            <Link href="/auth/login"
+            <button onClick={() => setModalView("login")}
               className="relative group flex items-center gap-1.5 text-sm">
-              
               <span className="flex items-center gap-1.5 text-gray-700 group-hover:text-[#C8A96A] transition">
                 <User size={20} />
               </span>
-
               <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-[#C8A96A] group-hover:w-full transition-all duration-300"></span>
-            </Link>
+            </button>
           )}
 
           {/* Cart icon */} 
@@ -149,16 +186,19 @@ export default function Header() {
           ))}
           {!user && (
             <div className="pt-3 border-t border-gray-100 flex gap-3">
-              <Link href="/auth/login" className="flex-1 text-center py-2 border border-gray-200 rounded-xl text-sm text-gray-700 hover:border-[#C8A96A]">
+              <button onClick={() => { setMobileOpen(false); setModalView("login"); }}
+                className="flex-1 text-center py-2 border border-gray-200 rounded-xl text-sm text-gray-700 hover:border-[#C8A96A]">
                 Đăng nhập
-              </Link>
-              <Link href="/auth/register" className="flex-1 text-center py-2 bg-[#C8A96A] rounded-xl text-sm text-white font-semibold">
+              </button>
+              <button onClick={() => { setMobileOpen(false); setModalView("register"); }}
+                className="flex-1 text-center py-2 bg-[#C8A96A] rounded-xl text-sm text-white font-semibold">
                 Đăng ký
-              </Link>
+              </button>
             </div>
           )}
         </div>
       )}
     </header>
+    </>
   );
 }
