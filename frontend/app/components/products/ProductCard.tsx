@@ -7,7 +7,6 @@ import { useState } from "react";
 import { useCart } from "@/app/context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
 import { formatPrice, type ApiProduct } from "@/app/lib/api";
-import { useRouter } from "next/navigation";
 
 interface Props { product: ApiProduct; }
 
@@ -31,14 +30,13 @@ function thumb(product: ApiProduct): string {
 
 export default function ProductCard({ product }: Props) {
   const { addToCart } = useCart();
-  const { user }      = useAuth();
-  const router        = useRouter();
+  const { user, openLoginModal } = useAuth();
   const [adding, setAdding] = useState(false);
   const [added,  setAdded]  = useState(false);
 
   const handleAdd = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!user) { router.push("/auth/login?redirect=/products"); return; }
+    if (!user) { openLoginModal(); return; }
     setAdding(true);
     try {
       await addToCart(product._id, 1);

@@ -19,7 +19,10 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 
   if (!isLogin) {
     removeToken();
-    window.location.href = "/auth/login";
+    // Mở modal đăng nhập thay vì chuyển trang
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("auth:openLoginModal"));
+    }
   }
 }
 
@@ -112,7 +115,7 @@ export const cartApi = {
 // ── ORDERS ────────────────────────────────────────────────────────────────────
 export interface Address { _id: string; receiverName: string; phone: string; address: string; isDefault: boolean; }
 export interface Order {
-  _id: string; totalPrice: number;
+  _id: string; totalPrice: number; shippingFee?: number; discountAmount?: number;
   status: "pending" | "confirmed" | "shipping" | "completed" | "cancelled";
   orderType: "normal" | "custom"; createdAt: string; address?: Address;
 }

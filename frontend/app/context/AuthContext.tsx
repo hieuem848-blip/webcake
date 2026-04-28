@@ -9,6 +9,7 @@ interface AuthContextType {
   signIn: (username: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
+  openLoginModal: () => void; // Mở modal đăng nhập từ bất kỳ đâu
   onSignIn?: () => void;  // callback cho CartProvider gọi refreshCart
   onSignOut?: () => void; // callback cho CartProvider gọi resetCart
 }
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AUTH_EVENTS = {
   SIGNED_IN: "auth:signedIn",
   SIGNED_OUT: "auth:signedOut",
+  OPEN_LOGIN_MODAL: "auth:openLoginModal",
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -61,8 +63,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.dispatchEvent(new Event(AUTH_EVENTS.SIGNED_OUT));
   };
 
+  const openLoginModal = () => {
+    window.dispatchEvent(new Event(AUTH_EVENTS.OPEN_LOGIN_MODAL));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut, refresh }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signOut, refresh, openLoginModal }}>
       {children}
     </AuthContext.Provider>
   );

@@ -9,6 +9,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { LoginForm } from "@/app/auth/login/page";
 import { RegisterForm } from "@/app/auth/register/page";
 import { ForgotForm } from "@/app/auth/forgot-password/page";
+import { AUTH_EVENTS } from "@/app/context/AuthContext";
 
 type AuthModalView = "login" | "register" | "forgot" | null;
 
@@ -31,6 +32,13 @@ export default function Header() {
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Lắng nghe event mở modal đăng nhập từ các component khác
+  useEffect(() => {
+    const handler = () => setModalView("login");
+    window.addEventListener(AUTH_EVENTS.OPEN_LOGIN_MODAL, handler);
+    return () => window.removeEventListener(AUTH_EVENTS.OPEN_LOGIN_MODAL, handler);
   }, []);
 
   // Đóng mobile menu khi chuyển trang

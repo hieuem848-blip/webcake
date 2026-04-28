@@ -22,7 +22,7 @@ export default function ProductDetailPage() {
   const { id }        = useParams<{ id: string }>();
   const router        = useRouter();
   const { addToCart } = useCart();
-  const { user }      = useAuth();
+  const { user, openLoginModal } = useAuth();
 
   const [data,            setData]            = useState<ApiProductDetail | null>(null);
   const [loading,         setLoading]         = useState(true);
@@ -46,7 +46,7 @@ export default function ProductDetailPage() {
   }, [id]);
 
   const handleAddToCart = async () => {
-    if (!user) { router.push(`/auth/login?redirect=/products/${id}`); return; }
+    if (!user) { openLoginModal(); return; }
     setAdding(true);
     try {
       await addToCart(id, qty, selectedVariant);
@@ -58,7 +58,7 @@ export default function ProductDetailPage() {
   };
 
   const handleBuyNow = async () => {
-    if (!user) { router.push(`/auth/login?redirect=/products/${id}`); return; }
+    if (!user) { openLoginModal(); return; }
     await addToCart(id, qty, selectedVariant);
     router.push("/cart");
   };

@@ -21,7 +21,7 @@ const SHIPPING_FEE = 30000;
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, totalPrice, loading } =
     useCart();
-  const { user } = useAuth();
+  const { user, openLoginModal } = useAuth();
   const router = useRouter();
 
   const shippingFee =
@@ -49,12 +49,12 @@ export default function CartPage() {
           <p className="text-gray-400 text-sm mb-6">
             Đăng nhập để xem giỏ hàng của bạn
           </p>
-          <Link
-            href="/auth/login?redirect=/cart"
+          <button
+            onClick={openLoginModal}
             className="btn-gold inline-flex items-center gap-2 px-7 py-3 rounded-full text-sm"
           >
             Đăng nhập
-          </Link>
+          </button>
         </div>
       </main>
     );

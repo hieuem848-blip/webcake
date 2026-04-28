@@ -21,7 +21,7 @@ const PLACEHOLDERS = ["/cake.jpg", "/cake1.jpg", "/cake2.jpg", "/cake3.jpg"];
 
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, openLoginModal } = useAuth();
   const router = useRouter();
 
   const [addresses, setAddresses]           = useState<Address[]>([]);
@@ -50,10 +50,12 @@ export default function CheckoutPage() {
   const finalTotal    = totalPrice + shippingFee - discountAmt;
 
   // redirect nếu chưa login hoặc giỏ trống
+  // Không redirect khi đã đặt hàng thành công (placed=true) để màn hình success hiện được
   useEffect(() => {
-    if (!user) { router.push("/auth/login?redirect=/checkout"); return; }
+    if (placed) return;
+    if (!user) { openLoginModal(); return; }
     if (items.length === 0) { router.push("/cart"); return; }
-  }, [user, items, router]);
+  }, [user, items, router, placed]);
 
   // Load địa chỉ từ DB
   useEffect(() => {

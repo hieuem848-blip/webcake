@@ -5,7 +5,7 @@ import { chatApi, type ChatMessage, type ChatSession } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
 
 export default function ChatWidget() {
-  const { user } = useAuth();
+  const { user, openLoginModal } = useAuth();
   const [open, setOpen] = useState(false);
   const [chatSession, setChatSession] = useState<ChatSession | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -56,7 +56,7 @@ export default function ChatWidget() {
 
   const handleOpen = async () => {
     if (!user) {
-      window.location.href = "/auth/login";
+      openLoginModal();
       return;
     }
     setOpen(true);
