@@ -39,6 +39,14 @@ const orderSchema = new mongoose.Schema(
       enum: ["cod", "momo", "vnpay"],
       default: "cod",
     },
+    voucherCode: {
+      type: String,
+      default: null,
+    },
+    discountAmount: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

@@ -119,11 +119,24 @@ export interface Order {
 export interface OrderItem { _id: string; product?: ApiProduct; variant?: ProductVariant; price: number; quantity: number; }
 
 export const orderApi = {
-  createFromCart: (data: { addressId: string }) =>
+  createFromCart: (data: { addressId: string; paymentMethod?: string; voucherCode?: string }) =>
     apiFetch<{ message: string; orderId: string }>("/orders/from-cart", { method: "POST", body: JSON.stringify(data) }),
   getAll: () => apiFetch<Order[]>("/orders"),
   getById: (id: string) => apiFetch<{ order: Order; items: OrderItem[] }>(`/orders/${id}`),
   cancel: (id: string) => apiFetch(`/orders/${id}/cancel`, { method: "PUT" }),
+};
+
+// ── VOUCHER ───────────────────────────────────────────────────────────────────
+export interface VoucherApplyResult {
+  message: string;
+  voucher: { _id: string; code: string; description: string; discountType: string; discountValue: number };
+  discountAmount: number;
+  finalTotal: number;
+}
+
+export const voucherApi = {
+  apply: (data: { code: string; orderTotal: number }) =>
+    apiFetch<VoucherApplyResult>("/vouchers/apply", { method: "POST", body: JSON.stringify(data) }),
 };
 
 // ── PAYMENT ──────────────────────────────────────────────────────────────────

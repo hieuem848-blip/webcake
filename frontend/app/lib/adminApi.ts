@@ -455,3 +455,36 @@ export const adminChatApi = {
     adminFetch<AdminChatMessage>(`/admin/chats/${id}/message`, { method: "POST", body: JSON.stringify({ message }) }),
   closeChat: (id: string) => adminFetch(`/admin/chats/${id}/close`, { method: "PUT" }),
 };
+
+// ── ADMIN VOUCHER ─────────────────────────────────────────────────────────────
+export interface AdminVoucher {
+  _id: string;
+  code: string;
+  description: string;
+  discountType: "percent" | "fixed";
+  discountValue: number;
+  minOrderValue: number;
+  maxDiscountAmount: number | null;
+  usageLimit: number | null;
+  usageCount: number;
+  startDate: string | null;
+  endDate: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export const adminVoucherApi = {
+  getAll: (params?: { search?: string; isActive?: string }) => {
+    const q = new URLSearchParams();
+    if (params?.search) q.set("search", params.search);
+    if (params?.isActive !== undefined && params.isActive !== "") q.set("isActive", params.isActive);
+    return adminFetch<AdminVoucher[]>(`/admin/vouchers${q.toString() ? "?" + q.toString() : ""}`);
+  },
+  getById: (id: string) => adminFetch<AdminVoucher>(`/admin/vouchers/${id}`),
+  create: (data: Partial<AdminVoucher>) =>
+    adminFetch<{ message: string; voucher: AdminVoucher }>("/admin/vouchers", { method: "POST", body: JSON.stringify(data) }),
+  update: (id: string, data: Partial<AdminVoucher>) =>
+    adminFetch<{ message: string; voucher: AdminVoucher }>(`/admin/vouchers/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  delete: (id: string) => adminFetch(`/admin/vouchers/${id}`, { method: "DELETE" }),
+  toggle: (id: string) => adminFetch<{ isActive: boolean }>(`/admin/vouchers/${id}/toggle`, { method: "PATCH" }),
+};

@@ -13,7 +13,7 @@ import {
 
 export default function Footer() {
   return (
-    <footer className="bg-[#FEFBF4] text-[#5A544B] text-sm">
+    <footer className="bg-white text-[#5A544B] text-sm">
       <div className="max-w-7xl mx-auto px-6 py-14 grid grid-cols-1 md:grid-cols-4 gap-12">
         
         {/* Logo + giới thiệu */}

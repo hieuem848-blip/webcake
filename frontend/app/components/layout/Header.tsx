@@ -84,7 +84,7 @@ export default function Header() {
         </div>
       )}
 
-    <header className="sticky top-9 z-40 w-full border-b bg-[#FEFBF4] shadow-sm">
+    <header className="sticky top-9 z-40 w-full bg-white shadow-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-between py-4">
 
         {/* Logo */}

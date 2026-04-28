@@ -1,21 +1,16 @@
-// Tạo đơn hàng từ giỏ
-// Tạo đơn từ custom cake
-// Xem danh sách đơn hàng
-// Xem chi tiết đơn hàng
-// Hủy đơn (khi chưa giao dịch)
-
 import Cart from "../models/Cart.js";
 import Order from "../models/Order.js";
 import OrderItem from "../models/OrderItem.js";
 import Address from "../models/Address.js";
 import CustomCakeRequest from "../models/CustomCakeRequest.js";
+import Voucher from "../models/Voucher.js";
 
 // POST /api/orders/from-cart
 // Tạo đơn hàng từ giỏ
 export const createOrderFromCart = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { addressId, paymentMethod } = req.body;
+    const { addressId, paymentMethod, voucherCode } = req.body;
 
     const address = await Address.findOne({ _id: addressId, user: userId });
     if (!address) {
@@ -35,7 +30,41 @@ export const createOrderFromCart = async (req, res) => {
     const SHIPPING_FEE = 30000;
     const SHIPPING_THRESHOLD = 500000;
     const shippingFee = subTotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
-    const totalPrice = subTotal + shippingFee;
+
+    // Xử lý voucher
+    let discountAmount = 0;
+    let appliedVoucherCode = null;
+
+    if (voucherCode) {
+      const voucher = await Voucher.findOne({ code: voucherCode.trim().toUpperCase(), isActive: true });
+      if (voucher) {
+        const now = new Date();
+        const isValid =
+          (!voucher.startDate || now >= voucher.startDate) &&
+          (!voucher.endDate || now <= voucher.endDate) &&
+          (voucher.usageLimit === null || voucher.usageCount < voucher.usageLimit) &&
+          subTotal >= voucher.minOrderValue;
+
+        if (isValid) {
+          if (voucher.discountType === "percent") {
+            discountAmount = Math.floor((subTotal * voucher.discountValue) / 100);
+            if (voucher.maxDiscountAmount !== null) {
+              discountAmount = Math.min(discountAmount, voucher.maxDiscountAmount);
+            }
+          } else {
+            discountAmount = voucher.discountValue;
+          }
+          discountAmount = Math.min(discountAmount, subTotal);
+          appliedVoucherCode = voucher.code;
+
+          // Tăng số lần dùng
+          voucher.usageCount += 1;
+          await voucher.save();
+        }
+      }
+    }
+
+    const totalPrice = subTotal + shippingFee - discountAmount;
 
     const validMethods = ["cod", "momo", "vnpay"];
     const method = validMethods.includes(paymentMethod) ? paymentMethod : "cod";
@@ -45,6 +74,8 @@ export const createOrderFromCart = async (req, res) => {
       address: addressId,
       shippingFee,
       totalPrice,
+      discountAmount,
+      voucherCode: appliedVoucherCode,
       status: "pending",
       orderType: "normal",
       paymentMethod: method,

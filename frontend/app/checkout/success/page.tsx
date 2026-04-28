@@ -19,7 +19,7 @@ export default function CheckoutSuccessPage() {
             : <XCircle size={40} className="text-red-500" />}
         </div>
         <h1 className="text-3xl font-bold text-gray-800 mb-3" style={{ fontFamily: "var(--font-heading)" }}>
-          {isSuccess ? "Thanh toán thành công! 🎉" : "Thanh toán thất bại"}
+          {isSuccess ? "Thanh toán thành công!" : "Thanh toán thất bại"}
         </h1>
         {orderId && <p className="text-sm text-gray-500 mb-2">Mã đơn hàng: <span className="font-mono font-semibold text-gray-700">{orderId}</span></p>}
         <p className="text-gray-400 text-sm mb-8">

@@ -18,6 +18,7 @@ import {
   LogOut,
   Menu,
   Calendar,
+  Tag,
 } from "lucide-react";
 
 type NavItem = {
@@ -68,6 +69,12 @@ const NAV: NavItem[] = [
     href: "/admin/inventory",
     label: "Kho nguyên liệu",
     icon: <Boxes size={20} />,
+    roles: ["ADMIN"],
+  },
+  {
+    href: "/admin/vouchers",
+    label: "Mã giảm giá",
+    icon: <Tag size={20} />,
     roles: ["ADMIN"],
   },
   {

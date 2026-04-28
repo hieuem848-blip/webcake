@@ -17,6 +17,7 @@ import adminCustomCakeRoutes from "./routes/admin/adminCustomCakeRoute.js";
 import adminChatRoutes from "./routes/admin/adminChatRoute.js";
 import adminDashboardRoutes from "./routes/admin/adminDashboardRoute.js";
 import adminInventoryRoutes from "./routes/admin/adminInventoryRoute.js";
+import adminVoucherRoutes from "./routes/admin/adminVoucherRoute.js";
 
 import productRoutes from "./routes/productRoute.js";
 import categoryRoutes from "./routes/categoryRoute.js";
@@ -27,6 +28,7 @@ import paymentRoutes from "./routes/paymentRoute.js";
 import vnpayRoutes from "./routes/vnpayRoute.js";
 import reviewRoutes from "./routes/reviewRoute.js";
 import chatRoutes from "./routes/chatRoute.js";
+import voucherRoutes from "./routes/voucherRoute.js";
 
 dotenv.config();
 
@@ -69,6 +71,7 @@ app.use("/api/payments",     protectedRoute, paymentRoutes);
 app.use("/api/reviews",      reviewRoutes);
 app.use("/api/chats",        protectedRoute, chatRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/vouchers",     protectedRoute, voucherRoutes);
 
 /* ── ADMIN ──────────────────────────────────────────────────── */
 app.use("/api/admin/users",        adminUserRoutes);
@@ -79,6 +82,7 @@ app.use("/api/admin/custom-cakes", adminCustomCakeRoutes);
 app.use("/api/admin/chats",        adminChatRoutes);
 app.use("/api/admin/dashboards",   adminDashboardRoutes);
 app.use("/api/admin/inventory",    adminInventoryRoutes);
+app.use("/api/admin/vouchers",     adminVoucherRoutes);
 
 connectDB().then(() => {
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
