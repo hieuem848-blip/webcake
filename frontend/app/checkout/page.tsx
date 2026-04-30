@@ -111,7 +111,7 @@ export default function CheckoutPage() {
     setVoucherError("");
     setApplyingVoucher(true);
     try {
-      const result = await voucherApi.apply({ code: voucherCode.trim(), orderTotal: totalPrice + shippingFee });
+      const result = await voucherApi.apply({ code: voucherCode.trim(), orderTotal: totalPrice });
       setVoucherResult(result);
       setVoucherError("");
     } catch (err: unknown) {

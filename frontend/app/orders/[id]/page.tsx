@@ -207,17 +207,12 @@ export default function OrderDetailPage() {
               </div>
 
               {/* CHI TIẾT GIÁ */}
-              <div className="border-t border-gray-100 pt-4 space-y-2 text-sm">
+              <div className="border-t border-gray-100 pt-4 space-y-4 text-sm">
                 <div className="flex justify-between text-gray-500">
                   <span>Tạm tính</span>
                   <span className="font-medium text-gray-700">{formatPrice(subTotal)}</span>
                 </div>
-                {discountAmount > 0 && (
-                  <div className="flex justify-between text-gray-500">
-                    <span>Giảm giá</span>
-                    <span className="font-medium text-green-600">−{formatPrice(discountAmount)}</span>
-                  </div>
-                )}
+
                 <div className="flex justify-between text-gray-500">
                   <span>Phí giao hàng</span>
                   {shippingFee === 0
@@ -225,10 +220,19 @@ export default function OrderDetailPage() {
                     : <span className="font-medium text-gray-700">{formatPrice(shippingFee)}</span>
                   }
                 </div>
+
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-gray-500">
+                    <span>Giảm giá</span>
+                    <span className="font-medium text-green-600">−{formatPrice(discountAmount)}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between font-bold text-gray-800 pt-2 border-t border-gray-100">
                   <span>Tổng cộng</span>
                   <span className="text-[#C8A96A] text-lg">{formatPrice(order.totalPrice)}</span>
                 </div>
+
               </div>
             </div>
 
