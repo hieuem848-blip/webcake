@@ -79,6 +79,8 @@ export interface AdminCategory {
 
 export interface AdminOrder {
   _id: string; totalPrice: number;
+  shippingFee?: number;
+  discount?: number;
   status: "pending" | "confirmed" | "shipping" | "completed" | "cancelled";
   orderType: "normal" | "custom"; createdAt: string;
   user?: { _id: string; displayName: string; email: string; phone: string };

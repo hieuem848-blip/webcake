@@ -7,10 +7,10 @@ import Link from "next/link";
 const STATUS_FLOW = ["pending", "confirmed", "shipping", "completed"];
 const PAYMENT_LABEL: Record<string, string> = { cod: "COD", momo: "MoMo", vnpay: "VNPay" };
 const STATUS_COLOR_MAP: Record<string, string> = {
-  pending: "#f59e0b",    // amber
-  confirmed: "#3b82f6",  // blue
-  shipping: "#8b5cf6",   // purple
-  completed: "#10b981",  // green
+  pending: "#f59e0b",
+  confirmed: "#3b82f6",
+  shipping: "#8b5cf6",
+  completed: "#10b981",
 };
 const STATUS_BTN_COLOR: Record<string, string> = {
   pending: "bg-amber-500 hover:bg-amber-600",
@@ -56,6 +56,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const currentIdx = STATUS_FLOW.indexOf(order.status);
   const nextStatus = currentIdx >= 0 && currentIdx < STATUS_FLOW.length - 1 ? STATUS_FLOW[currentIdx + 1] : null;
 
+  // Tính subtotal từ các items
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const discountAmount = order.discountAmount ?? 0;
+  const shippingFee = (order as any).shippingFee ?? 0;
+  const discount = (order as any).discount ?? 0;
+
   return (
     <AdminShell>
       <div className="w-full space-y-4">
@@ -74,56 +80,58 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {/* Sản phẩm */}
             <div className="bg-white rounded-2xl border border-gray-100 p-6">
-              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Sản phẩm đặt</h2>
+              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Tóm tắt đơn hàng</h2>
               <div className="space-y-1">
                 {items.map(item => (
                   <div key={item._id} className="flex items-start justify-between py-3 border-b border-gray-50 last:border-0">
                     <div className="flex-1">
                       <p className="font-medium text-sm text-gray-800">{item.product?.name ?? "Sản phẩm đã xóa"}</p>
                       {item.variant && <p className="text-xs text-gray-400 mt-0.5">Size: {item.variant.size} · {item.variant.serving}</p>}
-                      <p className="text-xs text-gray-400 mt-0.5">x{item.quantity} · {formatPrice(item.price)}/cái</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{formatPrice(item.price)}/cái x{item.quantity}</p>
                     </div>
-                    <p className="font-bold text-sm text-amber-600 ml-4">{formatPrice(item.price * item.quantity)}</p>
+                    <p className="font-semibold text-sm text-gray-600 ml-4">{formatPrice(item.price * item.quantity)}</p>
                   </div>
                 ))}
               </div>
-                  <div className="pt-3 border-t border-gray-100 mt-3">
-                    <span className="font-semibold text-gray-700">Thanh toán</span>
-                    <p className="font-medium text-gray-800 mt-1">
-                      {PAYMENT_LABEL[(order as any).paymentMethod ?? ""] ?? "—"}
-                    </p>
-                  </div>
-              <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
-                <span className="font-semibold text-gray-700">Tổng cộng</span>
-                <span className="text-lg font-bold text-amber-600">{formatPrice(order.totalPrice)}</span>
-              </div>
-            </div>
 
-            {/* Địa chỉ */}
-            {order.address && (
-              <div className="bg-white rounded-2xl border border-gray-100 p-6">
-                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                  Thông tin giao hàng
-                </h2>
+              {/* Bảng tính tiền */}
+              <div className="mt-4 pt-4 border-t border-gray-100 space-y-9.5">
+                {/* Thành tiền */}
+                <div className="flex justify-between items-center text-lg font-bold text-amber-600 pt-2">
+                  <span className="font-semibold text-gray-800">Thành tiền</span>
+                  <span>{formatPrice(subtotal)}</span>
+                </div>
 
-                <div className="space-y-2 text-sm text-gray-700">
-                  <p>
-                    <span className="font-semibold text-gray-800">Tên:</span>{" "}
-                    {order.user?.displayName ?? "—"}
-                  </p>
+                {/* Phí giao hàng */}
+                <div className="flex justify-between items-center text-sm pt-2">
+                  <span className="font-semibold text-gray-600">Phí giao hàng</span>
+                  {shippingFee > 0
+                    ? <span>{formatPrice(shippingFee)}</span>
+                    : <span className="text-green-600 font-medium">Miễn phí</span>
+                  }
+                </div>
 
-                  <p>
-                    <span className="font-medium text-gray-600">SĐT:</span>{" "}
-                    {order.address.phone}
-                  </p>
+                {/* Giảm giá */}
+                <div className="flex justify-between items-center text-sm text-gray-600 pt-2">
+                  <span className="font-semibold text-gray-600">Giảm giá</span>
+                  <span className="font-medium text-red-600">−{formatPrice(discountAmount)}</span>
+                </div>
 
-                  <p>
-                    <span className="font-medium text-gray-600">Địa chỉ:</span>{" "}
-                    {order.address.address}
-                  </p>
+                {/* Phương thức thanh toán */}
+                <div className="flex justify-between items-center text-sm text-gray-600 pt-2">
+                  <span className="font-semibold text-gray-600">Thanh toán</span>
+                  <span className="font-medium text-gray-800">
+                    {PAYMENT_LABEL[(order as any).paymentMethod ?? ""] ?? "—"}
+                  </span>
+                </div>
+
+                {/* Tổng cộng */}
+                <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                  <span className="font-semibold text-gray-700">Tổng cộng</span>
+                  <span className="text-lg font-bold text-amber-600">{formatPrice(order.totalPrice)}</span>
                 </div>
               </div>
-            )} 
+            </div>
           </div>
 
           {/* Right */}
@@ -150,6 +158,13 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   <span className="font-semibold text-gray-800">SĐT:</span>{" "}
                   {order.user?.phone ?? "—"}
                 </p>
+
+                {order.address && (
+                  <p>
+                    <span className="font-semibold text-gray-800">Địa chỉ:</span>{" "}
+                    {order.address.address}
+                  </p>
+                )}
 
                 <p>
                   <span className="font-semibold text-gray-800">Ngày đặt:</span>{" "}

@@ -160,7 +160,11 @@ export default function OrderDetailPage() {
                   </div>
                   <div className="col-span-2 text-center text-sm text-[#C8A96A] font-bold">{formatPrice(item.price)}</div>
                   <div className="col-span-2 text-center text-sm text-gray-600 font-medium">×{item.quantity}</div>
-                  <div className="col-span-2 text-right text-sm font-bold text-gray-800">{formatPrice(item.price * item.quantity)}</div>
+                  <div className="col-span-2 text-right text-sm font-bold text-gray-800">{formatPrice(order.totalPrice)}
+
+
+                    
+                  </div>
                 </div>
               ))}
             </div>

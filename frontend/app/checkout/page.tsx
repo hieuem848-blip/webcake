@@ -346,14 +346,11 @@ export default function CheckoutPage() {
                     <div key={item._id} className="flex items-center gap-3">
                       <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-amber-50 shrink-0">
                         <Image src={PLACEHOLDERS[idx]} alt={name} fill className="object-cover" />
-                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#C8A96A] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                          {item.quantity}
-                        </span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-lg font-medium text-gray-800 truncate">{name}</p>
+                        <p className="text-sm font-medium text-gray-800 truncate">{name}</p>
                         {item.variant && <p className="text-xs text-gray-400">{item.variant.size}</p>}
-                        <p className="text-sm text-gray-400">{formatPrice(item.price)}</p>
+                        <p className="text-xs text-gray-400">{formatPrice(item.price)} x{item.quantity}</p>
                       </div>
                       <span className="text-sm font-bold text-gray-700 shrink-0">
                         {formatPrice(item.price * item.quantity)}
