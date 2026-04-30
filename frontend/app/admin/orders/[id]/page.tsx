@@ -119,7 +119,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
                 {/* Phương thức thanh toán */}
                 <div className="flex justify-between items-center text-sm text-gray-600 pt-2">
-                  <span className="font-semibold text-gray-600">Thanh toán bằng</span>
+                  <span className="font-semibold text-gray-600">Thanh toán</span>
                   <span className="font-medium text-gray-800">
                     {PAYMENT_LABEL[(order as any).paymentMethod ?? ""] ?? "—"}
                   </span>
@@ -127,7 +127,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
                 {/* Tổng cộng */}
                 <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                  <span className="font-semibold text-gray-700">Số tiền thanh toán</span>
+                  <span className="font-semibold text-gray-700">Tổng cộng</span>
                   <span className="text-lg font-bold text-amber-600">{formatPrice(order.totalPrice)}</span>
                 </div>
               </div>

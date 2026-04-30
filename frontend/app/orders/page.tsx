@@ -69,9 +69,10 @@ export default function OrdersPage() {
     );
 
   // Tính tổng tiền tất cả đơn
-  const totalSpent = orders.reduce((sum, o) => sum + o.totalPrice, 0);
+  const totalSpent = orders.filter(o => ["completed", "delivered"].includes(o.status)).reduce((sum, o) => sum + o.totalPrice, 0);
   const pendingCount = orders.filter(o => o.status === "pending" || o.status === "confirmed").length;
-  const completedCount = orders.filter(o => o.status === "delivered").length;
+  const cancelledCount = orders.filter(o => o.status === "cancelled").length;
+  const completedCount = orders.filter(o => o.status === "completed").length;
 
   return (
     <main className="w-full bg-gray-100">
@@ -171,6 +172,10 @@ export default function OrdersPage() {
                 <div className="flex justify-between text-gray-600">
                   <span>Đang xử lý</span>
                   <span className="font-semibold text-amber-500">{pendingCount}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>Đã hủy</span>
+                  <span className="font-semibold text-red-500">{cancelledCount}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Đã hoàn thành</span>
