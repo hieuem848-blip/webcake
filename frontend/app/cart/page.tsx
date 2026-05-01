@@ -28,13 +28,6 @@ export default function CartPage() {
     totalPrice >= SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
   const finalTotal = totalPrice + shippingFee;
 
-  const placeholders = [
-    "/cake.jpg",
-    "/cake1.jpg",
-    "/cake2.jpg",
-    "/cake3.jpg",
-  ];
-
   // 🔒 Chưa login
   if (!user)
     return (
@@ -152,9 +145,8 @@ export default function CartPage() {
               {items.map((item) => {
                 const productName =
                   item.product?.name || "Sản phẩm";
-                const imgIndex =
-                  productName.charCodeAt(0) %
-                  placeholders.length;
+                const imgSrc =
+                  item.product?.mainImageUrl ;
 
                 return (
                   <div
@@ -167,10 +159,11 @@ export default function CartPage() {
                     <div className="col-span-4 flex items-center gap-4">
                       <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-amber-50">
                         <Image
-                          src={placeholders[imgIndex]}
+                          src={imgSrc}
                           alt={productName}
                           fill
                           className="object-cover"
+                          onError={(e) => { (e.target as HTMLImageElement).src = ""; }}
                         />
                       </div>
                       <div>
