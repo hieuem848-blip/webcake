@@ -1,8 +1,12 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 import { connectDB } from "./libs/db.js";
 import authRoute from "./routes/authRoute.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import userRoute from "./routes/userRoute.js";
 import addressRoute from "./routes/addressRoute.js";
 import cookieParser from "cookie-parser";
@@ -51,8 +55,9 @@ app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 app.use(cookieParser());
 
-// Serve uploaded images as static files
-app.use("/uploads", express.static("uploads"));
+// Serve uploaded images - trỏ đúng vào webcake-main/uploads/
+const UPLOADS_ROOT = path.resolve(__dirname, "../../uploads");
+app.use("/uploads", express.static(UPLOADS_ROOT));
 
 /* ── PUBLIC ─────────────────────────────────────────────────── */
 app.use("/api/auth", authRoute);

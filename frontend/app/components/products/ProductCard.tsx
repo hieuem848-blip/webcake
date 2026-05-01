@@ -10,22 +10,17 @@ import { formatPrice, type ApiProduct } from "@/app/lib/api";
 
 interface Props { product: ApiProduct; }
 
-/**
- * Ảnh fallback theo slug danh mục.
- * Khi backend trả về ảnh thật (productImages) thì trang chi tiết
- * sẽ dùng ảnh thật; ProductCard chỉ cần ảnh đại diện nhanh.
- */
-const CATEGORY_IMG: Record<string, string> = {
-  "banh-kem":      "/cake1.jpg",
-  "banh-kem-mini": "/cake2.jpg",
-  "topping":       "/brand.jpg",
-  "do-uong":       "/cakebg.png",
-};
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5001";
+const NO_IMAGE = "/no-image.png";
+
+function resolveImgUrl(url?: string | null): string {
+  if (!url) return NO_IMAGE;
+  if (url.startsWith("http")) return url;
+  return `${API_BASE}${url}`;
+}
 
 function thumb(product: ApiProduct): string {
-  if (product.mainImageUrl) return product.mainImageUrl; // ✅ ưu tiên ảnh chính nếu có
-  const slug = typeof product.category === "object" ? product.category.slug : "";
-  return CATEGORY_IMG[slug] ?? "/cake.jpg";
+  return resolveImgUrl(product.mainImageUrl ?? null);
 }
 
 export default function ProductCard({ product }: Props) {

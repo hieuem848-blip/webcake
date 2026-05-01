@@ -72,7 +72,7 @@ export default function OrderDetailPage() {
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold text-[#A79F91]">Chi tiết đơn hàng</h1>
-              <p className="text-sm text-[#A79F91] mt-0.5 font-mono">#{order._id.slice(-10).toUpperCase()}</p>
+              <p className="text-sm text-[#A79F91] mt-0.5 font-mono">#{order._id.slice(-8).toUpperCase()}</p>
             </div>
             <Link
             href="/orders"
@@ -145,31 +145,48 @@ export default function OrderDetailPage() {
                 <div className="col-span-2 text-center">Số lượng</div>
                 <div className="col-span-2 text-right">Thành tiền</div>
               </div>
-              {items.map((item) => (
-                <div key={item._id} className="grid grid-cols-12 items-center px-6 py-4 border-b border-gray-50 last:border-0">
-                  <div className="col-span-6 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Package size={16} className="text-[#C8A96A]" />
+              {items.map((item) => {
+                const rawImg = item.product?.mainImageUrl ?? null;
+                const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api").replace("/api", "");
+                const imgUrl = rawImg
+                  ? rawImg.startsWith("http") ? rawImg : `${API_BASE}${rawImg}`
+                  : null;
+                return (
+                  <div key={item._id} className="grid grid-cols-12 items-center px-6 py-4 border-b border-gray-50 last:border-0">
+                    <div className="col-span-6 flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-amber-50 border border-amber-100">
+                        {imgUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={imgUrl} alt={item.product?.name || ""} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Package size={16} className="text-[#C8A96A]" />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">{item.product?.name || "Bánh tùy chỉnh"}</p>
+                        {item.variant && (
+                          <p className="text-xs text-gray-400 mt-0.5">{item.variant.size} · {item.variant.serving} người</p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">{item.product?.name || "Bánh tùy chỉnh"}</p>
-                      {item.variant && (
-                        <p className="text-xs text-gray-400 mt-0.5">{item.variant.size} · {item.variant.serving} người</p>
-                      )}
-                    </div>
+                    <div className="col-span-2 text-center text-sm text-[#C8A96A] font-bold">{formatPrice(item.price)}</div>
+                    <div className="col-span-2 text-center text-sm text-gray-600 font-medium">×{item.quantity}</div>
+                    <div className="col-span-2 text-right text-sm font-bold text-gray-800">{formatPrice(item.price * item.quantity)}</div>
                   </div>
-                  <div className="col-span-2 text-center text-sm text-[#C8A96A] font-bold">{formatPrice(item.price)}</div>
-                  <div className="col-span-2 text-center text-sm text-gray-600 font-medium">×{item.quantity}</div>
-                  <div className="col-span-2 text-right text-sm font-bold text-gray-800">{formatPrice(order.totalPrice)}
-
-
-                    
-                  </div>
+                );
+              })}
+              {/* TỔNG CỘNG */}
+              <div className="grid grid-cols-12 items-center px-6 py-4 bg-amber-50/60 border-t border-amber-100">
+                <div className="col-span-10 text-left text-sm font-semibold text-gray-600 pr-4">Tổng cộng ({items.length} sản phẩm)</div>
+                <div className="col-span-2 text-right text-base font-bold text-[#C8A96A]">
+                  {formatPrice(items.reduce((sum, i) => sum + i.price * i.quantity, 0))}
                 </div>
-              ))}
-            </div>
+              </div>
+          </div>
 
-            {/* HỦY ĐƠN */}
+          {/* HỦY ĐƠN */}
             {order.status === "pending" && (
               <div className="bg-red-50 border border-red-100 rounded-2xl p-5 flex items-center justify-between">
                 <div className="flex items-center gap-3 text-sm text-red-600">
@@ -182,10 +199,31 @@ export default function OrderDetailPage() {
                 </button>
               </div>
             )}
-          </div>
+        </div>
 
           {/* RIGHT */}
           <div className="space-y-5">
+
+            {/* ĐỊA CHỈ GIAO HÀNG */}
+            {order.address && (
+              <div className="bg-white rounded-2xl p-6 shadow-sm space-y-3">
+                <h2 className="font-bold text-gray-800 flex items-center gap-2">
+                  <MapPin size={16} className="text-[#C8A96A]" /> Địa chỉ giao hàng
+                </h2>
+                <div className="space-y-2.5 text-sm pt-1">
+                  {[
+                    { label: "Tên",             value: order.address.receiverName },
+                    { label: "Số điện thoại",   value: order.address.phone        },
+                    { label: "Địa chỉ",         value: order.address.address      },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="flex items-start justify-between gap-4 py-2 border-b border-gray-50 last:border-0">
+                      <span className="text-gray-400 flex-shrink-0">{label}</span>
+                      <span className="font-semibold text-gray-800 text-right">{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* TÓM TẮT & PHÍ SHIP */}
             <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
@@ -194,7 +232,7 @@ export default function OrderDetailPage() {
               </h2>
               <div className="space-y-2 text-sm">
                 {[
-                  { label: "Mã đơn hàng",  value: `#${order._id.slice(-10).toUpperCase()}` },
+                  { label: "Mã đơn hàng",  value: `#${order._id.slice(-8).toUpperCase()}` },
                   { label: "Ngày đặt",      value: new Date(order.createdAt).toLocaleString("vi-VN") },
                   { label: "Loại đơn",      value: order.orderType === "custom" ? "Bánh đặt" : "Đơn thường" },
                   { label: "Trạng thái",    value: st.label },
@@ -235,28 +273,7 @@ export default function OrderDetailPage() {
 
               </div>
             </div>
-
-            {/* ĐỊA CHỈ GIAO HÀNG */}
-            {order.address && (
-              <div className="bg-white rounded-2xl p-6 shadow-sm space-y-3">
-                <h2 className="font-bold text-gray-800 flex items-center gap-2">
-                  <MapPin size={16} className="text-[#C8A96A]" /> Địa chỉ giao hàng
-                </h2>
-                <div className="space-y-2.5 text-sm pt-1">
-                  {[
-                    { label: "Tên",             value: order.address.receiverName },
-                    { label: "Số điện thoại",   value: order.address.phone        },
-                    { label: "Địa chỉ",         value: order.address.address      },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="flex items-start justify-between gap-4 py-2 border-b border-gray-50 last:border-0">
-                      <span className="text-gray-400 flex-shrink-0">{label}</span>
-                      <span className="font-semibold text-gray-800 text-right">{value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
+            
           </div>
         </div>
       </div>

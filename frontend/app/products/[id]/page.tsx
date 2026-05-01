@@ -9,14 +9,14 @@ import { productApi, formatPrice, type ApiProductDetail } from "@/app/lib/api";
 import { useCart } from "@/app/context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
 
-/* ── Ảnh fallback theo danh mục ──────────────────────────────── */
-const CATEGORY_IMGS: Record<string, string[]> = {
-  "banh-kem":      ["/cake1.jpg",  "/cake.jpg",   "/cake2.jpg"],
-  "banh-kem-mini": ["/cake2.jpg",  "/cake3.jpg",  "/cake1.jpg"],
-  "topping":       ["/brand.jpg",  "/cakebg.png", "/cake.jpg"],
-  "do-uong":       ["/cakebg.png", "/brand.jpg",  "/cake.jpg"],
-};
-const FALLBACK = ["/cake.jpg", "/cake1.jpg", "/cake2.jpg"];
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5001";
+const NO_IMAGE = "/no-image.png";
+
+function resolveImgUrl(url?: string | null): string {
+  if (!url) return NO_IMAGE;
+  if (url.startsWith("http")) return url;
+  return `${API_BASE}${url}`;
+}
 
 export default function ProductDetailPage() {
   const { id }        = useParams<{ id: string }>();
@@ -63,14 +63,11 @@ export default function ProductDetailPage() {
     router.push("/cart");
   };
 
-  /* ── Ảnh: dùng ảnh DB nếu có, nếu không thì fallback theo danh mục ── */
-  const catSlug =
-    data?.product?.category && typeof data.product.category === "object"
-      ? data.product.category.slug : "";
+  /* ── Ảnh sản phẩm ── */
   const allImages =
     data?.images?.length
-      ? data.images.map(i => i.imageUrl)
-      : (CATEGORY_IMGS[catSlug] ?? FALLBACK);
+      ? data.images.map(i => resolveImgUrl(i.imageUrl))
+      : [NO_IMAGE];
 
   const variantObj   = data?.variants?.find(v => v._id === selectedVariant);
   const displayPrice = variantObj ? variantObj.price : (data?.product.basePrice ?? 0);
@@ -122,7 +119,7 @@ export default function ProductDetailPage() {
                 alt={product.name}
                 fill priority
                 className="object-cover"
-                onError={e => { (e.target as HTMLImageElement).src = "/cake.jpg"; }}
+                onError={e => { (e.target as HTMLImageElement).src = NO_IMAGE; }}
               />
             </div>
             {allImages.length > 1 && (
@@ -133,7 +130,7 @@ export default function ProductDetailPage() {
                       i === activeImg ? "border-[#C8A96A]" : "border-transparent hover:border-gray-300"
                     }`}>
                     <Image src={src} alt="" fill className="object-cover"
-                      onError={e => { (e.target as HTMLImageElement).src = "/cake.jpg"; }} />
+                      onError={e => { (e.target as HTMLImageElement).src = NO_IMAGE; }} />
                   </button>
                 ))}
               </div>
