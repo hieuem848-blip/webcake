@@ -357,9 +357,9 @@ export default function VouchersPage() {
                     <th className="px-5 py-3.5">Giảm giá</th>
                     <th className="px-5 py-3.5">Đơn tối thiểu</th>
                     <th className="px-5 py-3.5">Lượt dùng</th>
-                    <th className="px-5 py-3.5">Hiệu lực</th>
+                    <th className="px-5 py-3.5">Hạn sử dụng</th>
                     <th className="px-5 py-3.5">Trạng thái</th>
-                    <th className="px-5 py-3.5 text-right">Hành động</th>
+                    <th className="px-5 py-3.5 text-right">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
