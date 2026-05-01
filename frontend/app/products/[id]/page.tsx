@@ -9,13 +9,6 @@ import { productApi, formatPrice, type ApiProductDetail } from "@/app/lib/api";
 import { useCart } from "@/app/context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5001";
-function resolveImgUrl(url: string): string {
-  if (!url) return "/cake.jpg";
-  if (url.startsWith("http")) return url;
-  return `${API_BASE}${url}`;
-}
-
 /* ── Ảnh fallback theo danh mục ──────────────────────────────── */
 const CATEGORY_IMGS: Record<string, string[]> = {
   "banh-kem":      ["/cake1.jpg",  "/cake.jpg",   "/cake2.jpg"],
@@ -76,7 +69,7 @@ export default function ProductDetailPage() {
       ? data.product.category.slug : "";
   const allImages =
     data?.images?.length
-      ? data.images.map(i => resolveImgUrl(i.imageUrl))
+      ? data.images.map(i => i.imageUrl)
       : (CATEGORY_IMGS[catSlug] ?? FALLBACK);
 
   const variantObj   = data?.variants?.find(v => v._id === selectedVariant);
