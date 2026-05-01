@@ -8,7 +8,8 @@ export default function MapLocationPage() {
     <div className="bg-white">
 
       {/* HERO BANNER */}
-      <section className="relative w-full h-[300px]">
+      <section className="relative w-full h-[300px] md:h-[340px] border-b border-amber-100 overflow-hidden">
+        {/* background */}
         <Image
           src="/cakebg.png"
           alt="Hệ thống cửa hàng"
@@ -20,10 +21,22 @@ export default function MapLocationPage() {
         {/* overlay */}
         <div className="absolute inset-0 bg-black/40"></div>
 
-        {/* text */}
-         <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white px-6">
-          <p className="text-xs tracking-[0.3em] mb-3">Witchy Bakery</p>
-          <h1 className="text-4xl font-bold">Hệ thống cửa hàng</h1>
+        {/* content */}
+        <div className="relative h-full max-w-7xl mx-auto px-6 flex flex-col justify-center items-center text-center text-white">
+          <p className="text-xs tracking-[0.3em] uppercase mb-3 font-semibold text-amber-200">
+            Witchy Bakery
+          </p>
+
+          <h1
+            className="text-4xl md:text-5xl font-bold mb-3"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            Hệ thống cửa hàng
+          </h1>
+
+          <p className="max-w-md text-sm md:text-base text-gray-200">
+            Hệ thống cửa hàng của chúng tôi luôn sẵn sàng phục vụ bạn với bánh tươi mỗi ngày.
+          </p>
         </div>
       </section>
 

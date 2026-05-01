@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { SlidersHorizontal, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { productApi, categoryApi, type ApiProduct, type ApiCategory } from "@/app/lib/api";
 import ProductCard from "@/app/components/products/ProductCard";
+import Image from "next/image";
 
 export default function ProductsPage() {
   const [products,    setProducts]    = useState<ApiProduct[]>([]);
@@ -58,23 +59,37 @@ export default function ProductsPage() {
   const handleCategory = (slug: string) => { setActiveCategory(slug); setPage(1); };
 
   return (
-    <main className="min-h-screen page-fade bg-[#f0e2d0]">
+    <main className=" bg-[#f0e2d0]">
 
       {/* Hero */}
-      <div className="bg-[#fdf6ec] border-b border-amber-100 py-14">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <p className="text-xs tracking-[0.3em] text-[#C8A96A] uppercase mb-3 font-semibold">
+      <section className="relative w-full h-[300px] md:h-[340px] border-b border-amber-100 overflow-hidden">
+        {/* background image */}
+        <Image
+          src="/cakebg.png"
+          alt="Hero background"
+          fill
+          className="object-cover"
+          priority
+        />
+
+        <div className="absolute inset-0 bg-black/40"></div>
+        
+        <div className="relative h-full max-w-7xl mx-auto px-6 flex flex-col justify-center items-center text-center text-white">
+          <p className="text-xs tracking-[0.3em] uppercase mb-3 font-semibold text-amber-200">
             Witchy Bakery
           </p>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4"
-              style={{ fontFamily: "var(--font-heading)" }}>
+
+          <h1
+            className="text-4xl md:text-5xl font-bold mb-3"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
             Cửa hàng bánh kem
           </h1>
-          <p className="text-gray-500 max-w-md mx-auto text-sm leading-relaxed">
+          <p className="max-w-md mx-auto text-sm leading-relaxed text-gray-200">
             Tất cả sản phẩm được làm thủ công mỗi ngày — từ bánh kem đến topping trái cây tươi.
           </p>
         </div>
-      </div>
+      </section>
 
       <div className="max-w-7xl mx-auto px-6 py-10">
 

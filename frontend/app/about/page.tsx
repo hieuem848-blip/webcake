@@ -5,27 +5,37 @@ import Image from "next/image";
 export default function AboutPage() {
   return (
     <main className="bg-[#F7F6F3] text-stone-700 font-sans antialiased">
-      {/* HERO – có ảnh nền */}
-      <section className="relative h-[70vh] min-h-[500px] flex items-center justify-center">
-        {/* Ảnh nền */}
+    
+      {/* HERO BANNER */}
+      <section className="relative w-full h-[300px] md:h-[340px] border-b border-amber-100 overflow-hidden">
+        {/* background */}
         <Image
           src="/cake.jpg"
-          alt="Witchy Bakery - Bánh kem thủ công"
+          alt="Về Witchy Bakery"
           fill
           className="object-cover"
           priority
         />
-        {/* Lớp phủ tối để text nổi bật */}
-        <div className="absolute inset-0 bg-black/40" />
-        
-        {/* Nội dung text */}
-        <div className="relative z-10 text-center px-4 max-w-2xl text-white">
-          <span className="text-xs tracking-[0.2em] font-light uppercase text-white/80 mb-3 block">
+
+        {/* overlay */}
+        <div className="absolute inset-0 bg-black/40"></div>
+
+        {/* content */}
+        <div className="relative h-full max-w-7xl mx-auto px-6 flex flex-col justify-center items-center text-center text-white">
+          <p className="text-xs tracking-[0.3em] uppercase mb-3 font-semibold text-amber-200">
+            Witchy Bakery
+          </p>
+
+          <h1
+            className="text-4xl md:text-5xl font-bold mb-3"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
             Về chúng tôi
-          </span>
-          <h1 className="text-4xl md:text-6xl font-serif font-light leading-tight">
-            Câu chuyện &<br />Giá trị cốt lõi
           </h1>
+
+          <p className="max-w-md text-sm md:text-base text-gray-200">
+            Câu chuyện thương hiệu và những giá trị làm nên Witchy Bakery.
+          </p>
         </div>
       </section>
 
