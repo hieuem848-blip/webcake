@@ -150,7 +150,7 @@ function OrdersContent() {
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Trạng thái</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Thanh toán</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Ngày tạo</th>
-                  <th className="text-right px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Chi tiết</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Chi tiết</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -170,7 +170,7 @@ function OrdersContent() {
                         <div className="space-y-0.5">
                           {order.orderItems.slice(0, 2).map((item, i) => (
                             <p key={i} className="text-xs text-gray-700 truncate">
-                              {item.product?.name ?? item.customRequest?.description ?? "Bánh custom"}
+                              {item.product?.name ?? item.customRequest?.description ?? "Sản phẩm đã xóa"}
                               <span className="text-gray-400 ml-1">×{item.quantity}</span>
                             </p>
                           ))}
