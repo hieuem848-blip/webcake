@@ -40,8 +40,23 @@ export const getProducts = async (req, res) => {
 
     const total = await Product.countDocuments(query);
 
+    // Gắn ảnh vào từng sản phẩm
+    const ids = products.map(p => p._id);
+    const allImages = await ProductImage.find({ product: { $in: ids } }).select("product imageUrl isMain");
+    const imageMap = {};
+    allImages.forEach(img => {
+      const pid = img.product.toString();
+      if (!imageMap[pid]) imageMap[pid] = [];
+      imageMap[pid].push({ _id: img._id, imageUrl: img.imageUrl, isMain: img.isMain });
+    });
+
+    const data = products.map(p => ({
+      ...p.toObject(),
+      images: imageMap[p._id.toString()] || [],
+    }));
+
     res.json({ 
-      data: products, 
+      data, 
       total, 
       page: Number(page), 
       totalPages: Math.ceil(total / limit) 

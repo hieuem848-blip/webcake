@@ -69,11 +69,18 @@ export const getProducts = async (req, res) => {
 
     const total = await Product.countDocuments(filter);
 
+    // Gắn ảnh chính vào từng sản phẩm, đổi tên thành mainImageUrl
+    const productsWithImages = await attachMainImages(products);
+    const productsOut = productsWithImages.map(p => ({
+      ...p,
+      mainImageUrl: p.mainImage || null,
+    }));
+
     res.json({
       total,
       page: Number(page),
       totalPages: Math.ceil(total / limit),
-      products,
+      products: productsOut,
     });
   } catch (error) {
     console.error(error);

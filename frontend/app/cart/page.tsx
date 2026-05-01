@@ -13,6 +13,13 @@ import {
 import { useCart } from "@/app/context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
 import { formatPrice } from "@/app/lib/api";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5001";
+function resolveImgUrl(url?: string | null): string {
+  if (!url) return "/cake.jpg";
+  if (url.startsWith("http")) return url;
+  return `${API_BASE}${url}`;
+}
 import { useRouter } from "next/navigation";
 
 const SHIPPING_THRESHOLD = 500000;
@@ -145,8 +152,7 @@ export default function CartPage() {
               {items.map((item) => {
                 const productName =
                   item.product?.name || "Sản phẩm";
-                const imgSrc =
-                  item.product?.mainImageUrl ;
+                const imgSrc = resolveImgUrl(item.product?.mainImageUrl);
 
                 return (
                   <div
@@ -163,7 +169,7 @@ export default function CartPage() {
                           alt={productName}
                           fill
                           className="object-cover"
-                          onError={(e) => { (e.target as HTMLImageElement).src = ""; }}
+                          onError={(e) => { (e.target as HTMLImageElement).src = "/cake.jpg"; }}
                         />
                       </div>
                       <div>

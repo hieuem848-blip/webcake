@@ -387,7 +387,7 @@ export default function VouchersPage() {
                   {vouchers.map((v) => {
                     const expired = v.endDate ? new Date(v.endDate) < now : false;
                     const notStarted = v.startDate ? new Date(v.startDate) > now : false;
-                    const statusLabel = !v.isActive ? { label: "Không hoạt động", color: "text-gray-500 bg-gray-100" }
+                    const statusLabel = !v.isActive ? { label: "Không hoạt động", color: "text-red-500 bg-red-100" }
                       : expired ? { label: "Hết hạn", color: "text-red-600 bg-red-50" }
                       : notStarted ? { label: "Chưa bắt đầu", color: "text-blue-600 bg-blue-50" }
                       : { label: "Đang hoạt động", color: "text-green-600 bg-green-50" };

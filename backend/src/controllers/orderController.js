@@ -4,6 +4,7 @@ import OrderItem from "../models/OrderItem.js";
 import Address from "../models/Address.js";
 import CustomCakeRequest from "../models/CustomCakeRequest.js";
 import Voucher from "../models/Voucher.js";
+import ProductImage from "../models/ProductImage.js";
 
 // POST /api/orders/from-cart
 // Tạo đơn hàng từ giỏ
@@ -189,9 +190,26 @@ export const getOrderDetail = async (req, res) => {
       .populate("product")
       .populate("customRequest");
 
+    // Gắn mainImageUrl vào từng product trong order
+    const productIds = items.map(i => i.product?._id).filter(Boolean);
+    const mainImgs = await ProductImage.find({
+      product: { $in: productIds },
+      isMain: true,
+    }).select("product imageUrl");
+    const imgMap = {};
+    mainImgs.forEach(img => { imgMap[img.product.toString()] = img.imageUrl; });
+
+    const itemsOut = items.map(item => {
+      const obj = item.toObject();
+      if (obj.product) {
+        obj.product.mainImageUrl = imgMap[obj.product._id.toString()] || null;
+      }
+      return obj;
+    });
+
     res.json({
       order,
-      items,
+      items: itemsOut,
     });
   } catch (error) {
     console.error("getOrderDetail error:", error);

@@ -8,6 +8,7 @@
 import Cart from "../models/Cart.js";
 import Product from "../models/Product.js";
 import ProductVariant from "../models/ProductVariant.js";
+import ProductImage from "../models/ProductImage.js";
 
 // Get/api/cart
 export const getCart = async (req, res) => {
@@ -23,14 +24,31 @@ export const getCart = async (req, res) => {
       });
     }
 
-    const totalPrice = cart.items.reduce(
+    // Gắn mainImageUrl vào từng product trong cart
+    const productIds = cart.items.map(item => item.product?._id).filter(Boolean);
+    const mainImgs = await ProductImage.find({
+      product: { $in: productIds },
+      isMain: true,
+    }).select("product imageUrl");
+    const imgMap = {};
+    mainImgs.forEach(img => { imgMap[img.product.toString()] = img.imageUrl; });
+
+    const items = cart.items.map(item => {
+      const itemObj = item.toObject();
+      if (itemObj.product) {
+        itemObj.product.mainImageUrl = imgMap[itemObj.product._id.toString()] || null;
+      }
+      return itemObj;
+    });
+
+    const totalPrice = items.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0,
     );
 
     res.json({
       cartId: cart._id,
-      items: cart.items,
+      items,
       totalPrice,
     });
   } catch (error) {

@@ -17,7 +17,12 @@ const SHIPPING_FEE = 30000;
 const SHIPPING_THRESHOLD = 500000;
 type PaymentMethod = "cod" | "momo" | "vnpay";
 
-const PLACEHOLDERS = ["/cake.jpg", "/cake1.jpg", "/cake2.jpg", "/cake3.jpg"];
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5001";
+function resolveImgUrl(url?: string | null): string {
+  if (!url) return "/cake.jpg";
+  if (url.startsWith("http")) return url;
+  return `${API_BASE}${url}`;
+}
 
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
@@ -341,11 +346,11 @@ export default function CheckoutPage() {
               <div className="space-y-3 max-h-52 overflow-y-auto pr-1">
                 {items.map((item) => {
                   const name = item.product?.name || "Sản phẩm";
-                  const idx = name.charCodeAt(0) % PLACEHOLDERS.length;
+                  const imgSrc = resolveImgUrl(item.product?.mainImageUrl);
                   return (
                     <div key={item._id} className="flex items-center gap-3">
                       <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-amber-50 shrink-0">
-                        <Image src={PLACEHOLDERS[idx]} alt={name} fill className="object-cover" />
+                        <Image src={imgSrc} alt={name} fill className="object-cover" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-800 truncate">{name}</p>
