@@ -11,6 +11,7 @@ import User from "../../models/User.js";
 import UserRole from "../../models/UserRole.js";
 import Role from "../../models/Role.js";
 import Order from "../../models/Order.js";
+import Session from "../../models/Session.js";
 
 // GET LIST USERS
 export const getUsers = async (req, res) => {
@@ -86,10 +87,24 @@ export const toggleUserStatus = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User không tồn tại" });
 
-    user.status = user.status === "active" ? "inactive" : "active";
+    // Không cho phép khóa chính tài khoản admin đang thao tác
+    if (String(user._id) === String(req.user._id)) {
+      return res.status(400).json({ message: "Không thể khóa tài khoản của chính mình" });
+    }
+
+    const willLock = user.status === "active";
+    user.status = willLock ? "inactive" : "active";
     await user.save();
 
-    res.json({ message: `Tài khoản đã được ${user.status === "active" ? "mở khóa" : "khóa"}`, user });
+    // Nếu khóa tài khoản → xóa toàn bộ session để buộc đăng xuất ngay lập tức
+    if (willLock) {
+      await Session.deleteMany({ userId: user._id });
+    }
+
+    res.json({
+      message: willLock ? "Tài khoản đã bị khóa" : "Tài khoản đã được mở khóa",
+      user,
+    });
   } catch (error) {
     res.status(500).json({ message: "Lỗi hệ thống" });
   }

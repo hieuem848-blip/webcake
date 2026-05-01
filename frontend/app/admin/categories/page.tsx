@@ -141,7 +141,7 @@ export default function CategoriesPage() {
                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Slug</th>
                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Mô tả</th>
                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Trạng thái</th>
-                    <th className="text-right px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Thao tác</th>
+                    <th className="text-center px-10 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">

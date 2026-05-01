@@ -62,6 +62,11 @@ export const signIn = async (req, res) => {
         .json({ message: "username hoặc password không chính xác" });
     }
 
+    // kiểm tra tài khoản có bị khóa không
+    if (user.status === "inactive") {
+      return res.status(403).json({ message: "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ." });
+    }
+
     // kiểm tra password
     const passwordCorrect = await bcrypt.compare(password, user.hashedPassword);
 

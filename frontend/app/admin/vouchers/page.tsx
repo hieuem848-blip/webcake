@@ -3,7 +3,6 @@ import { useEffect, useState, useCallback } from "react";
 import AdminShell from "../components/AdminShell";
 import { adminVoucherApi, formatPrice } from "../../lib/adminApi";
 import {
-  Plus, Pencil, Trash2, ToggleLeft, ToggleRight,
   Tag, Loader2, X, Check, AlertCircle, Search, Percent, DollarSign,
 } from "lucide-react";
 
@@ -291,15 +290,33 @@ export default function VouchersPage() {
     if (!confirm("Xóa voucher này?")) return;
     setDeletingId(id);
     try { await adminVoucherApi.delete(id); await load(); }
-    catch (e) { console.error(e); }
+    catch (e: unknown) { alert(e instanceof Error ? e.message : "Lỗi"); }
     finally { setDeletingId(null); }
   };
 
   const handleToggle = async (id: string) => {
+    if (togglingId) return;
+    const v = vouchers.find(x => x._id === id);
+    if (!v) return;
+    const message = v.isActive
+      ? "Tắt voucher này?\nKhách hàng sẽ không thể dùng mã này!"
+      : "Bật lại voucher này?";
+    if (!confirm(message)) return;
+
     setTogglingId(id);
-    try { await adminVoucherApi.toggle(id); await load(); }
-    catch (e) { console.error(e); }
-    finally { setTogglingId(null); }
+    setVouchers(prev =>
+      prev.map(x => x._id === id ? { ...x, isActive: !x.isActive } : x)
+    );
+    try {
+      await adminVoucherApi.toggle(id);
+    } catch (e: unknown) {
+      setVouchers(prev =>
+        prev.map(x => x._id === id ? { ...x, isActive: !x.isActive } : x)
+      );
+      alert(e instanceof Error ? e.message : "Lỗi khi thay đổi trạng thái");
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   const now = new Date();
@@ -314,8 +331,12 @@ export default function VouchersPage() {
             <p className="text-sm text-gray-400 mt-0.5">Tạo và quản lý mã giảm giá cho khách hàng</p>
           </div>
           <button onClick={() => setEditTarget(null)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-semibold transition">
-            <Plus size={16} /> Thêm voucher
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white shadow-sm shadow-amber-200 hover:shadow-amber-300 hover:-translate-y-0.5 transition-all"
+            style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}>
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Thêm voucher
           </button>
         </div>
 
@@ -359,14 +380,14 @@ export default function VouchersPage() {
                     <th className="px-5 py-3.5">Lượt dùng</th>
                     <th className="px-5 py-3.5">Hạn sử dụng</th>
                     <th className="px-5 py-3.5">Trạng thái</th>
-                    <th className="px-5 py-3.5 text-right">Thao tác</th>
+                    <th className="px-20 py-3.5">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {vouchers.map((v) => {
                     const expired = v.endDate ? new Date(v.endDate) < now : false;
                     const notStarted = v.startDate ? new Date(v.startDate) > now : false;
-                    const statusLabel = !v.isActive ? { label: "Tắt", color: "text-gray-500 bg-gray-100" }
+                    const statusLabel = !v.isActive ? { label: "Không hoạt động", color: "text-gray-500 bg-gray-100" }
                       : expired ? { label: "Hết hạn", color: "text-red-600 bg-red-50" }
                       : notStarted ? { label: "Chưa bắt đầu", color: "text-blue-600 bg-blue-50" }
                       : { label: "Đang hoạt động", color: "text-green-600 bg-green-50" };
@@ -405,21 +426,38 @@ export default function VouchersPage() {
                           </span>
                         </td>
                         <td className="px-5 py-4">
-                          <div className="flex items-center gap-2 justify-end">
-                            <button onClick={() => handleToggle(v._id)} disabled={togglingId === v._id}
-                              title={v.isActive ? "Tắt" : "Bật"}
-                              className="text-gray-400 hover:text-amber-500 transition disabled:opacity-50">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => setEditTarget(v)}
+                              className="px-3 py-1.5 rounded-xl text-xs font-medium bg-gray-100 text-gray-600 hover:bg-amber-100 hover:text-amber-700 transition-colors"
+                            >
+                              Sửa
+                            </button>
+                            <button
+                              onClick={() => handleToggle(v._id)}
+                              disabled={togglingId === v._id}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors disabled:opacity-40 ${
+                                togglingId === v._id
+                                  ? "border-gray-200 text-gray-300 cursor-not-allowed"
+                                  : v.isActive
+                                    ? "border-orange-200 text-orange-500 hover:bg-orange-50"
+                                    : "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                              }`}
+                            >
                               {togglingId === v._id
-                                ? <Loader2 size={16} className="animate-spin" />
-                                : v.isActive ? <ToggleRight size={20} className="text-amber-500" /> : <ToggleLeft size={20} />}
+                                ? <span className="flex items-center gap-1"><span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" /></span>
+                                : v.isActive ? "Tắt" : "Bật"
+                              }
                             </button>
-                            <button onClick={() => setEditTarget(v)} title="Chỉnh sửa"
-                              className="text-gray-400 hover:text-blue-500 transition">
-                              <Pencil size={15} />
-                            </button>
-                            <button onClick={() => handleDelete(v._id)} disabled={deletingId === v._id}
-                              title="Xóa" className="text-gray-400 hover:text-red-400 transition disabled:opacity-50">
-                              {deletingId === v._id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
+                            <button
+                              onClick={() => handleDelete(v._id)}
+                              disabled={deletingId === v._id}
+                              className="px-3 py-1.5 rounded-xl text-xs font-medium border border-red-100 text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
+                            >
+                              {deletingId === v._id
+                                ? <span className="flex items-center gap-1"><span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" /></span>
+                                : "Xóa"
+                              }
                             </button>
                           </div>
                         </td>

@@ -34,6 +34,11 @@ const authMiddleware = (req, res, next) => {
           return res.status(404).json({ message: "người dùng ko tồn tại" });
         }
 
+        // kiểm tra tài khoản có bị khóa không
+        if (user.status === "inactive") {
+          return res.status(403).json({ message: "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ." });
+        }
+
         // trả user về trong req ==> để sau dùng mà ko cần truy vấn lại
         req.user = user;
         next();
