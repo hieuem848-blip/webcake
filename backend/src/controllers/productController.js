@@ -12,7 +12,6 @@ import ProductImage from "../models/ProductImage.js";
 import ProductVariant from "../models/ProductVariant.js";
 import Category from "../models/Category.js";
 
-// Hàm phụ để gắn ảnh chính vào mỗi sản phẩm trong danh sách
 async function attachMainImages(products) {
   const ids = products.map(p => p._id);
   const mainImgs = await ProductImage.find({
@@ -29,7 +28,7 @@ async function attachMainImages(products) {
   });
 }
 
-//GET /api/products (Danh sách sản phẩm + lọc + search + pagination)
+// GET /api/products
 export const getProducts = async (req, res) => {
   try {
     const {
@@ -44,84 +43,35 @@ export const getProducts = async (req, res) => {
 
     const filter = { status: "active" };
 
-    // lọc theo category
     if (category) {
       const cate = await Category.findOne({ slug: category });
       if (cate) filter.category = cate._id;
     }
 
-    // search theo tên
     if (search) {
       filter.name = { $regex: search, $options: "i" };
     }
 
-    // lọc theo giá
     if (minPrice || maxPrice) {
       filter.basePrice = {};
       if (minPrice) filter.basePrice.$gte = Number(minPrice);
       if (maxPrice) filter.basePrice.$lte = Number(maxPrice);
     }
 
-    // Thứ tự category mặc định: bánh kem > decor > topping > đồ uống
-    const CATEGORY_ORDER = ["bánh kem", "decor", "topping", "đồ uống"];
+    // Sort toàn bộ DB trước, sau đó mới phân trang
+    let sortOption = { createdAt: -1 };
+    if (sort === "price-asc")  sortOption = { basePrice: 1 };
+    if (sort === "price-desc") sortOption = { basePrice: -1 };
 
-    let products;
-
-    if (sort === "price-asc" || sort === "price-desc") {
-      // Sort theo giá dùng find() bình thường
-      const sortOption = sort === "price-asc" ? { basePrice: 1 } : { basePrice: -1 };
-      products = await Product.find(filter)
-        .populate("category", "name slug")
-        .skip((Number(page) - 1) * Number(limit))
-        .limit(Number(limit))
-        .sort(sortOption)
-        .lean();
-    } else {
-      // Mặc định: sort theo thứ tự category cố định, rồi mới createdAt
-      products = await Product.aggregate([
-        { $match: filter },
-        {
-          $lookup: {
-            from: "categories",
-            localField: "category",
-            foreignField: "_id",
-            as: "categoryObj",
-          },
-        },
-        { $unwind: { path: "$categoryObj", preserveNullAndEmptyArrays: true } },
-        {
-          $addFields: {
-            categoryOrder: {
-              $let: {
-                vars: { nameLower: { $toLower: { $ifNull: ["$categoryObj.name", ""] } } },
-                in: {
-                  $switch: {
-                    branches: CATEGORY_ORDER.map((name, idx) => ({
-                      case: { $gte: [{ $indexOfCP: ["$$nameLower", name] }, 0] },
-                      then: idx,
-                    })),
-                    default: 99,
-                  },
-                },
-              },
-            },
-            category: {
-              _id: "$categoryObj._id",
-              name: "$categoryObj.name",
-              slug: "$categoryObj.slug",
-            },
-          },
-        },
-        { $sort: { categoryOrder: 1, createdAt: -1 } },
-        { $skip: (Number(page) - 1) * Number(limit) },
-        { $limit: Number(limit) },
-        { $project: { categoryObj: 0, categoryOrder: 0 } },
-      ]);
-    }
+    const products = await Product.find(filter)
+      .populate("category", "name slug")
+      .sort(sortOption)
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit))
+      .lean();
 
     const total = await Product.countDocuments(filter);
 
-    // Gắn ảnh chính vào từng sản phẩm, đổi tên thành mainImageUrl
     const productsWithImages = await attachMainImages(products);
     const productsOut = productsWithImages.map(p => ({
       ...p,
@@ -140,7 +90,7 @@ export const getProducts = async (req, res) => {
   }
 };
 
-// GET /api/products/:id (Chi tiết sản phẩm)
+// GET /api/products/:id
 export const getProductDetail = async (req, res) => {
   try {
     const { id } = req.params;
@@ -157,11 +107,7 @@ export const getProductDetail = async (req, res) => {
     const images = await ProductImage.find({ product: id });
     const variants = await ProductVariant.find({ product: id });
 
-    res.json({
-      product,
-      images,
-      variants,
-    });
+    res.json({ product, images, variants });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Lỗi lấy chi tiết sản phẩm" });
