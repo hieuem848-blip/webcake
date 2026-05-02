@@ -197,7 +197,7 @@ export default function CheckoutPage() {
   );
 
   return (
-    <main className="w-full bg-gray-100 page-fade">
+    <main className="w-full bg-[#F7F6F3] page-fade">
       <div className="bg-[#1c1d21]">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           <div>

@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-[#f3efe9]">
+    <div className="min-h-screen bg-[#F7F6F3]">
 
       {/* HERO BANNER */}
       <section className="relative w-full h-[300px] md:h-[340px] border-b border-amber-100 overflow-hidden">

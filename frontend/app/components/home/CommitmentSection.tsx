@@ -61,7 +61,7 @@ export default function CommitmentSectionPage() {
         .commit-hidden { opacity: 0; }
       `}</style>
 
-      <section className="bg-[#FEFBF4]  py-20 px-6" ref={ref}>
+      <section className="bg-[#F7F6F3]  py-20 px-6" ref={ref}>
         <h2 className={`text-center text-xl font-serif tracking-widest text-[#1c1a17] mb-16 ${visible ? "commit-title" : "commit-hidden"}`}>
           WITCHY BAKERY VỚI SỰ TIN TƯỞNG NGƯỜI DÙNG
           <p>CHÚNG TÔI LUÔN ĐẢM BẢO</p>

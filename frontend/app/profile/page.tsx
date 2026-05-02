@@ -62,7 +62,7 @@ export default function ProfilePage() {
   const u = profile?.user || user!;
 
   return (
-    <main className="w-full bg-gray-100">
+    <main className="w-full bg-[#F7F6F3]">
       {/* DARK HEADER */}
       <div className="bg-[#1c1d21]">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">

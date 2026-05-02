@@ -5,7 +5,7 @@ import { MapPin, Phone, Mail, Clock } from "lucide-react";
 
 export default function MapLocationPage() {
   return (
-    <div className="bg-white">
+    <div className="bg-[#F7F6F3]">
 
       {/* HERO BANNER */}
       <section className="relative w-full h-[300px] md:h-[340px] border-b border-amber-100 overflow-hidden">
@@ -41,7 +41,7 @@ export default function MapLocationPage() {
       </section>
 
       {/* MAP */}
-      <div className="py-10 bg-gray-100">
+      <div className="py-10 bg-[#F7F6F3]">
         <div className="max-w-5xl mx-auto px-6">
           <div className="w-full h-[480px] overflow-hidden rounded-xl shadow">
             <iframe
@@ -55,7 +55,7 @@ export default function MapLocationPage() {
       </div>
 
       {/* LOCATION */}
-      <section className="py-12 bg-gray-100">
+      <section className="py-12 bg-[#F7F6F3]">
         <div className="max-w-3xl mx-auto px-6">
 
           {/* Title */}

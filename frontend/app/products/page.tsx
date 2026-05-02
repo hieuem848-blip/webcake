@@ -59,7 +59,7 @@ export default function ProductsPage() {
   const handleCategory = (slug: string) => { setActiveCategory(slug); setPage(1); };
 
   return (
-    <main className=" bg-[#f0e2d0]">
+    <main className=" bg-[#F7F6F3]">
 
       {/* Hero */}
       <section className="relative w-full h-[300px] md:h-[340px] border-b border-amber-100 overflow-hidden">

@@ -35,7 +35,7 @@ export default function CartPage() {
     totalPrice >= SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
   const finalTotal = totalPrice + shippingFee;
 
-  // 🔒 Chưa login
+  // Chưa login
   if (!user)
     return (
       <main className="min-h-screen flex flex-col items-center justify-center gap-5 page-fade">
@@ -59,7 +59,7 @@ export default function CartPage() {
       </main>
     );
 
-  // 🛒 Giỏ trống
+  // Giỏ trống
   if (items.length === 0)
     return (
       <main className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 bg-gray-100">
@@ -85,7 +85,7 @@ export default function CartPage() {
     );
 
   return (
-    <main className="w-full bg-gray-100">
+    <main className="w-full bg-[#F7F6F3]">
       {/* HEADER */}
       <div className="bg-[#1c1d21]">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">

@@ -95,16 +95,23 @@ export default function ProductDetailPage() {
   const { product, variants } = data;
 
   return (
-    <main className="min-h-screen page-fade" style={{ background: "var(--background)" }}>
+    <main className="min-h-screen page-fade bg-[#F7F6F3]">
 
-      {/* Breadcrumb */}
-      <div className="border-b border-gray-100 bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-2 text-xs text-gray-400">
-          <Link href="/" className="hover:text-[#C8A96A] transition">Trang chủ</Link>
-          <span>/</span>
-          <Link href="/products" className="hover:text-[#C8A96A] transition">Sản phẩm</Link>
-          <span>/</span>
-          <span className="text-gray-600 font-medium truncate max-w-[200px]">{product.name}</span>
+      {/* HEADER */}
+      <div className="bg-[#1c1d21]">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-[#A79F91]">
+              Sản phẩm
+            </h1>
+            <p className="text-sm text-[#A79F91] mt-0.5">{product.name}</p>
+          </div>
+          <Link
+            href="/products"
+            className="flex items-center gap-1.5 text-sm text-[#C8A96A] hover:underline font-medium"
+          >
+            <ChevronLeft size={13} /> Tiếp tục mua sắm
+          </Link>
         </div>
       </div>
 
@@ -140,7 +147,7 @@ export default function ProductDetailPage() {
           {/* ── Thông tin ── */}
           <div className="space-y-5">
             <div>
-              <p className="text-xs text-[#C8A96A] font-semibold tracking-wider uppercase mb-2">
+              <p className="text-xs text-gray-600 font-semibold tracking-wider uppercase mb-2">
                 {typeof product.category === "object" ? product.category.name : "Sản phẩm"}
               </p>
               <h1 className="text-3xl font-bold text-gray-800 mb-4"
@@ -208,12 +215,12 @@ export default function ProductDetailPage() {
             {/* Trust badges */}
             <div className="grid grid-cols-3 gap-3 pt-3 border-t border-gray-100">
               {[
-                { icon: <Truck size={16} />,     label: "Giao hàng\nnhanh" },
-                { icon: <Shield size={16} />,    label: "Đảm bảo\nchất lượng" },
-                { icon: <RefreshCw size={16} />, label: "Đổi trả\ndễ dàng" },
+                { icon: <Truck size={22} />,     label: "Giao hàng\nnhanh" },
+                { icon: <Shield size={22} />,    label: "Đảm bảo\nchất lượng" },
+                { icon: <RefreshCw size={22} />, label: "Đổi trả\ndễ dàng" },
               ].map((b, i) => (
                 <div key={i} className="flex flex-col items-center gap-1.5 text-center">
-                  <div className="w-8 h-8 bg-amber-50 rounded-full flex items-center justify-center text-[#C8A96A]">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-[#C8A96A]">
                     {b.icon}
                   </div>
                   <p className="text-xs text-gray-500 whitespace-pre-line leading-tight">{b.label}</p>
@@ -231,7 +238,7 @@ export default function ProductDetailPage() {
                 className={`pb-3 text-sm font-medium transition border-b-2 -mb-px ${
                   tab === t
                     ? "border-[#C8A96A] text-[#C8A96A]"
-                    : "border-transparent text-gray-400 hover:text-gray-600"
+                    : "border-transparent text-black hover:text-gray-600"
                 }`}>
                 {t === "desc" ? "Mô tả sản phẩm" : "Thông tin chi tiết"}
               </button>
@@ -253,7 +260,7 @@ export default function ProductDetailPage() {
                 { label: "Trạng thái",   value: product.status === "active" ? "Còn hàng" : "Hết hàng" },
               ].map(row => (
                 <div key={row.label} className="flex justify-between py-3 border-b border-gray-100">
-                  <span className="text-gray-400">{row.label}</span>
+                  <span className="text-gray-600">{row.label}</span>
                   <span className="font-medium text-gray-700">{row.value}</span>
                 </div>
               ))}

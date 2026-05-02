@@ -39,7 +39,7 @@ export default function OrdersPage() {
       </main>
     );
 
-  // ⏳ Loading
+  // Loading
   if (authLoading || loading)
     return (
       <main className="min-h-screen flex items-center justify-center">
@@ -47,7 +47,7 @@ export default function OrdersPage() {
       </main>
     );
 
-  // 📦 Không có đơn hàng
+  // Không có đơn hàng
   if (orders.length === 0)
     return (
       <main className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 bg-gray-100">
@@ -75,7 +75,7 @@ export default function OrdersPage() {
   const completedCount = orders.filter(o => o.status === "completed").length;
 
   return (
-    <main className="w-full bg-gray-100">
+    <main className="w-full bg-[#F7F6F3]">
       {/* HEADER */}
       <div className="bg-[#1c1d21]">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
