@@ -36,13 +36,12 @@ export default function ProductsPage() {
       if (searchQuery.trim())       params.search   = searchQuery.trim();
       if (minPrice)                 params.minPrice = Number(minPrice);
       if (maxPrice)                 params.maxPrice = Number(maxPrice);
+      if (sortBy !== "default")     params.sort     = sortBy;
 
       const data = await productApi.getAll(
         params as Parameters<typeof productApi.getAll>[0]
       );
-      let items = data.products;
-      if (sortBy === "price-asc")  items = [...items].sort((a, b) => a.basePrice - b.basePrice);
-      if (sortBy === "price-desc") items = [...items].sort((a, b) => b.basePrice - a.basePrice);
+      const items = data.products;
 
       setProducts(items);
       setTotal(data.total);

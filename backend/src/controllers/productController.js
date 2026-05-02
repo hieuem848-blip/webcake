@@ -23,10 +23,10 @@ async function attachMainImages(products) {
   const map = {};
   mainImgs.forEach(img => { map[img.product.toString()] = img.imageUrl; });
 
-  return products.map(p => ({
-    ...p.toObject(),
-    mainImage: map[p._id.toString()] || null,
-  }));
+  return products.map(p => {
+    const obj = p.toObject ? p.toObject() : { ...p };
+    return { ...obj, mainImage: map[obj._id.toString()] || null };
+  });
 }
 
 //GET /api/products (Danh sách sản phẩm + lọc + search + pagination)
@@ -39,6 +39,7 @@ export const getProducts = async (req, res) => {
       search,
       minPrice,
       maxPrice,
+      sort,
     } = req.query;
 
     const filter = { status: "active" };
@@ -61,11 +62,62 @@ export const getProducts = async (req, res) => {
       if (maxPrice) filter.basePrice.$lte = Number(maxPrice);
     }
 
-    const products = await Product.find(filter)
-      .populate("category", "name slug")
-      .skip((page - 1) * limit)
-      .limit(Number(limit))
-      .sort({ createdAt: -1 });
+    // Thứ tự category mặc định: bánh kem > decor > topping > đồ uống
+    const CATEGORY_ORDER = ["bánh kem", "decor", "topping", "đồ uống"];
+
+    let products;
+
+    if (sort === "price-asc" || sort === "price-desc") {
+      // Sort theo giá dùng find() bình thường
+      const sortOption = sort === "price-asc" ? { basePrice: 1 } : { basePrice: -1 };
+      products = await Product.find(filter)
+        .populate("category", "name slug")
+        .skip((Number(page) - 1) * Number(limit))
+        .limit(Number(limit))
+        .sort(sortOption)
+        .lean();
+    } else {
+      // Mặc định: sort theo thứ tự category cố định, rồi mới createdAt
+      products = await Product.aggregate([
+        { $match: filter },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "category",
+            foreignField: "_id",
+            as: "categoryObj",
+          },
+        },
+        { $unwind: { path: "$categoryObj", preserveNullAndEmptyArrays: true } },
+        {
+          $addFields: {
+            categoryOrder: {
+              $let: {
+                vars: { nameLower: { $toLower: { $ifNull: ["$categoryObj.name", ""] } } },
+                in: {
+                  $switch: {
+                    branches: CATEGORY_ORDER.map((name, idx) => ({
+                      case: { $gte: [{ $indexOfCP: ["$$nameLower", name] }, 0] },
+                      then: idx,
+                    })),
+                    default: 99,
+                  },
+                },
+              },
+            },
+            category: {
+              _id: "$categoryObj._id",
+              name: "$categoryObj.name",
+              slug: "$categoryObj.slug",
+            },
+          },
+        },
+        { $sort: { categoryOrder: 1, createdAt: -1 } },
+        { $skip: (Number(page) - 1) * Number(limit) },
+        { $limit: Number(limit) },
+        { $project: { categoryObj: 0, categoryOrder: 0 } },
+      ]);
+    }
 
     const total = await Product.countDocuments(filter);
 

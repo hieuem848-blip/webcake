@@ -76,7 +76,7 @@ export interface ApiProduct {
 export interface ApiProductDetail { product: ApiProduct; images: ProductImage[]; variants: ProductVariant[]; }
 
 export const productApi = {
-  getAll: (params?: { page?: number; limit?: number; category?: string; search?: string; minPrice?: number; maxPrice?: number }) => {
+  getAll: (params?: { page?: number; limit?: number; category?: string; search?: string; minPrice?: number; maxPrice?: number; sort?: string }) => {
     const q = new URLSearchParams();
     if (params?.page) q.set("page", String(params.page));
     if (params?.limit) q.set("limit", String(params.limit));
@@ -84,6 +84,7 @@ export const productApi = {
     if (params?.search) q.set("search", params.search);
     if (params?.minPrice) q.set("minPrice", String(params.minPrice));
     if (params?.maxPrice) q.set("maxPrice", String(params.maxPrice));
+    if (params?.sort) q.set("sort", params.sort);
     return apiFetch<{ total: number; page: number; totalPages: number; products: ApiProduct[] }>(`/products?${q}`);
   },
   getById: (id: string) => apiFetch<ApiProductDetail>(`/products/${id}`),
