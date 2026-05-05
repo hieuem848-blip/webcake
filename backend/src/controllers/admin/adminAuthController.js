@@ -6,7 +6,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../../models/User.js";
-import UserRole from "../../models/UserRole.js";
 
 // ADMIN LOGIN
 export const adminLogin = async (req, res) => {

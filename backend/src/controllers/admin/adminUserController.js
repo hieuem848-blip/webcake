@@ -8,8 +8,6 @@
 // Xem tổng tiền user đã mua (cho thống kê)
 
 import User from "../../models/User.js";
-import UserRole from "../../models/UserRole.js";
-import Role from "../../models/Role.js";
 import Order from "../../models/Order.js";
 import Session from "../../models/Session.js";
 

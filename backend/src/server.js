@@ -30,7 +30,6 @@ import orderRoutes from "./routes/orderRoute.js";
 import customCakeRoutes from "./routes/customCakeRoute.js";
 import paymentRoutes from "./routes/paymentRoute.js";
 import vnpayRoutes from "./routes/vnpayRoute.js";
-import reviewRoutes from "./routes/reviewRoute.js";
 import chatRoutes from "./routes/chatRoute.js";
 import voucherRoutes from "./routes/voucherRoute.js";
 
@@ -73,7 +72,6 @@ app.use("/api/carts",        protectedRoute, cartRoutes);
 app.use("/api/orders",       protectedRoute, orderRoutes);
 app.use("/api/custom-cakes", protectedRoute, customCakeRoutes);
 app.use("/api/payments",     protectedRoute, paymentRoutes);
-app.use("/api/reviews",      reviewRoutes);
 app.use("/api/chats",        protectedRoute, chatRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/vouchers",     protectedRoute, voucherRoutes);
