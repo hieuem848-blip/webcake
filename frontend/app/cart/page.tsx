@@ -178,8 +178,7 @@ export default function CartPage() {
                         </h3>
                         {item.variant && (
                           <p className="text-sm text-gray-400">
-                            {item.variant.size} ·{" "}
-                            {item.variant.serving} người
+                            size bánh: {item.variant.size}
                           </p>
                         )}
                       </div>
